@@ -25,7 +25,15 @@ SECRET_KEY = 'django-insecure--r^$4c%+=-gpqz$1c17-2*6lcgb^hw25hjh*53&7bodmgk@(iv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '0.0.0.0:3000','0.0.0.0','127.0.0.1:8000', '127.0.0.0',
+    'https://app-dklunk-5.devedu.io/','app-dklunk-5.devedu.io/',
+    'hahns devedu app path',
+    'Josh path',
+    'Annabel path',
+    'Sammie path',
+
+]
 
 
 # Application definition
