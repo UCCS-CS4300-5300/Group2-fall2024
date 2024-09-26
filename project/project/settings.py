@@ -31,7 +31,7 @@ ALLOWED_HOSTS = [
     'hahns devedu app path', 
     'https://app-jfuentes-5.devedu.io/', 'app-jfuentes-5.devedu.io', 
     'https://app-afuina-5.devedu.io/', 'app-afuina-5.devedu.io', 
-    'Sammie path', 
+    'https://app-smatthe4container-5.devedu.io/', 'app-smatthe4container-5.devedu.io',
 
 ]
 
