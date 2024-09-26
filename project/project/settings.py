@@ -30,7 +30,7 @@ ALLOWED_HOSTS = [
     'https://app-dklunk-5.devedu.io/', 'app-dklunk-5.devedu.io', 
     'hahns devedu app path', 
     'https://app-jfuentes-5.devedu.io/', 'app-jfuentes-5.devedu.io', 
-    'https://app-afuina-5.devedu.io/' 'app-afuina-5.devedu.io', 
+    'https://app-afuina-5.devedu.io/', 'app-afuina-5.devedu.io', 
     'Sammie path', 
 
 ]
