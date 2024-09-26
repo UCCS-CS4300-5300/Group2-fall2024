@@ -27,11 +27,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '0.0.0.0:3000','0.0.0.0','127.0.0.1:8000', '127.0.0.0',
-    'https://app-dklunk-5.devedu.io/','app-dklunk-5.devedu.io/',
-    'hahns devedu app path',
-    'Josh path',
-    'Annabel path',
-    'Sammie path',
+    'https://app-dklunk-5.devedu.io/', 'app-dklunk-5.devedu.io', 
+    'hahns devedu app path', 
+    'Josh path', 
+    'Annabel path', 
+    'Sammie path', 
 
 ]
 
