@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '0.0.0.0:3000','0.0.0.0','127.0.0.1:8000', '127.0.0.0',
     'https://app-dklunk-5.devedu.io/', 'app-dklunk-5.devedu.io', 
-    'hahns devedu app path', 
+    'https://apt-hnguye22-5.devedu.io/', 'apt-hnguye22-5.devedu.io/'
     'https://app-jfuentes-5.devedu.io/', 'app-jfuentes-5.devedu.io', 
     'https://app-afuina-5.devedu.io/', 'app-afuina-5.devedu.io', 
     'https://app-smatthe4container-5.devedu.io/', 'app-smatthe4container-5.devedu.io',
