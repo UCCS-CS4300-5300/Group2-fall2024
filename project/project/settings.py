@@ -27,13 +27,12 @@ SECRET_KEY = 'django-insecure--r^$4c%+=-gpqz$1c17-2*6lcgb^hw25hjh*53&7bodmgk@(iv
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '0.0.0.0:3000','0.0.0.0','127.0.0.1:8000', '127.0.0.0',
+    '0.0.0.0', '127.0.0.1', '127.0.0.0',
     'https://app-dklunk-5.devedu.io/', 'app-dklunk-5.devedu.io', 
-    'https://apt-hnguye22-5.devedu.io/', 'apt-hnguye22-5.devedu.io/'
+    'https://app-hnguye22-5.devedu.io/proxy/3000/', 'app-hnguye22-5.devedu.io', 
     'https://app-jfuentes-5.devedu.io/', 'app-jfuentes-5.devedu.io', 
     'https://app-afuina-5.devedu.io/', 'app-afuina-5.devedu.io', 
     'https://app-smatthe4container-5.devedu.io/', 'app-smatthe4container-5.devedu.io',
-
 ]
 
 
@@ -60,7 +59,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# FORCE_SCRIPT_NAME = '/proxy/3000/'
+
 ROOT_URLCONF = 'project.urls'
+
+
 
 TEMPLATES = [
     {
