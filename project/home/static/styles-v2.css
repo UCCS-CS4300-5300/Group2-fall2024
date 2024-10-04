@@ -6,6 +6,14 @@ body {
     padding: 0;
 }
 
+/* Logo styling */
+.logo {
+    width: 150px; 
+    height: auto; 
+    /* display: inline-block;  */
+    float: left;
+}
+
 /* Header Styles */
 .header {
     background-color: #4CAF50; /* Green header */
