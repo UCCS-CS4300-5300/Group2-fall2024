@@ -24,4 +24,5 @@ urlpatterns = [
     # Maps the URL 'proxy/3000/' to the URL configurations defined in 'home.urls'
     path('proxy/3000/', include('home.urls')),
     path('', include('home.urls')),
+
 ]
