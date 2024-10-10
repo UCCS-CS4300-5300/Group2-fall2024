@@ -111,3 +111,15 @@ img {
     width: 100%;
     margin-top: 50px; /* Space below content */
 }
+
+/* Responsive: display on different screens devices */
+@media (max-width: 768px) {
+    .custom-navbar {
+        margin-left: 0; 
+    }
+    .nav ul {
+        list-style-type: none;
+        text-align: left !important;
+        padding: 10px 0px;
+    }
+}
