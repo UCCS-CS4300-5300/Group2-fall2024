@@ -35,12 +35,13 @@ ALLOWED_HOSTS = [
     'https://app-smatthe4container-5.devedu.io/', 'app-smatthe4container-5.devedu.io',
 ]
 
-CSRF_TRUSTED_ORIGINS = ['https://app-dklunk-5.devedu.io/',
-                        'https://app-hnguye22-5.devedu.io/proxy/3000/',
-                        'https://app-jfuentes-5.devedu.io/',
-                        'https://app-afuina-5.devedu.io/',
-                        'https://app-smatthe4container-5.devedu.io/'
-                        'https://*.devedu.io/']
+CSRF_TRUSTED_ORIGINS = [
+    'https://app-dklunk-5.devedu.io/',
+    'https://app-hnguye22-5.devedu.io/proxy/3000/',
+    'https://app-jfuentes-5.devedu.io/',
+    'https://app-afuina-5.devedu.io/',
+    'https://app-smatthe4container-5.devedu.io/',
+    'https://*.devedu.io/',]
 
 
 # Application definition

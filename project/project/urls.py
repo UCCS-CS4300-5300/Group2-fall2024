@@ -27,4 +27,5 @@ urlpatterns = [
     path('proxy/3000/', include('home.urls')),
     path('', include('home.urls')),
     #path('/calendar', CalendarView.as_view(), name = 'calendar' ),
+
 ]
