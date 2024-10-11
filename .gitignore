@@ -7,6 +7,8 @@ __pycache__/
 # Adds pycache to gitignore
 project/_pycache_
 home/__pycache__/
+project/project/_pycache_
+*__pycache__
 # C extensions
 *.so
 
