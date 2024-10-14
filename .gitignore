@@ -5,8 +5,10 @@ __pycache__/
 *$py.class
 
 # Adds pycache to gitignore
+project/_pycache_
+home/__pycache__/
 project/project/_pycache_
-
+*__pycache__
 # C extensions
 *.so
 
@@ -159,6 +161,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+*.pyc
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+
+
 #Map a URL to a view, and 'include' allows referencing other URL configuration modules
 urlpatterns = [
     # Maps the URL 'admin/' to Django's built-in admin interface
@@ -24,4 +26,6 @@ urlpatterns = [
     # Maps the URL 'proxy/3000/' to the URL configurations defined in 'home.urls'
     path('proxy/3000/', include('home.urls')),
     path('', include('home.urls')),
+    #path('/calendar', CalendarView.as_view(), name = 'calendar' ),
+
 ]

@@ -6,6 +6,18 @@ body {
     padding: 0;
 }
 
+/* Logo styling */
+.logo {
+    width: 40px;
+    height: auto;
+    /* display: inline-block; */
+    float: left;
+    margin-top: 10px !important;
+    margin-right: 24px !important;
+    margin-bottom: 24px !important;
+    margin-left: 10px !important;
+}
+
 /* Header Styles */
 .header {
     background-color: #4CAF50; /* Green header */
@@ -14,6 +26,7 @@ body {
     text-align: center;
     font-size: 2em; /* Increase font size for the title */
     text-transform: uppercase; /* Uppercase for a bolder look */
+    margin-top: 30px !important;
 }
 
 /* Navigation Styles */
@@ -30,22 +43,24 @@ body {
 .nav ul {
     list-style-type: none;
     padding: 10px 0;
-    margin: 0;
+    
     text-align: center;
+    margin-left: -50px;
 }
 
 .nav li {
     display: inline;
     margin: 0 15px;
 }
-
 .nav a {
     text-decoration: none;
+    
     color: #4CAF50; /* Green link color */
     padding: 10px 15px;
     border: 1px solid transparent;
     border-radius: 5px;
     transition: background-color 0.3s;
+    
 }
 
 .nav a:hover {
@@ -95,4 +110,16 @@ img {
     bottom: 0;
     width: 100%;
     margin-top: 50px; /* Space below content */
+}
+
+/* Responsive: display on different screens devices */
+@media (max-width: 768px) {
+    .custom-navbar {
+        margin-left: 0; 
+    }
+    .nav ul {
+        list-style-type: none;
+        text-align: left !important;
+        padding: 10px 0px;
+    }
 }
