@@ -5,6 +5,8 @@ from django.contrib.auth import views as auth
 
 urlpatterns = [
     path('', index, name='index'),
+    # include home path on url to match our navbar route
+    path('home', index, name='home'),
     path('login/',  Login, name ='login'),
     #path('logout/', auth.LogoutView.as_view(template_name ='logout.html'), name ='logout'),
     path('register/', Register, name ='register'),
