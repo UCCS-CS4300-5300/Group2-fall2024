@@ -2,15 +2,34 @@
 {% load static %}
 <!-- Used bootstrap to make sure sticky navigation bar with game-logo on the left and routes to other pages -->
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<!-- Updated navigation for responsiveness w/ better view -->
 <nav class="nav navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-    <!-- game-logo -->
+    <!-- logo -->
     <img src="{% static 'images/game-logo.png' %}" alt="GamePlan Logo" class="logo">
-    <!-- <nav class="nav"> -->
-        <ul>
-            <li><a href="{% url 'home' %}" class="active">Home</a></li>
-            <li><a href="#events">Events</a></li>
-            <li><a href="{% url 'calendar' %}">Calendar</a></li>
-            <li><a href="#settings">Settings</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
+    <!-- toggle navigation for the small screen sizes for responsiveness -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse custom-navbar" id="navbarNav">
+        <!-- navigation list -->
+        <ul class="navbar-nav">
+            <li class="nav-item active"><a class="nav-link" href="#home">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="#events">Events</a></li>
+            <li class="nav-item"><a class="nav-link" href="#calendar">Calendar</a></li>
+            <li class="nav-item"><a class="nav-link" href="#settings">Settings</a></li>
         </ul>
-    </nav>
+        <!-- Theme toggle button -->
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="themeToggleDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Theme
+            </button>
+            <div class="dropdown-menu" aria-labelledby="themeToggleDropdown">
+              <button id="theme-toggle" class="dropdown-item">Toggle Dark/Light</button>
+            </div>
+          </div>
+          
+    </div>
+</nav>
+
