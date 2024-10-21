@@ -45,3 +45,4 @@ class ViewsTestCase(TestCase):
         })
         self.assertEqual(response.status_code, 302)  # Expect a redirect after successful registration
         self.assertTrue(User.objects.filter(username='newuser').exists())  # Ensure the user was created
+ 
