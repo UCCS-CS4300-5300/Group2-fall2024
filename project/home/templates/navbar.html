@@ -26,10 +26,35 @@
               Theme
             </button>
             <div class="dropdown-menu" aria-labelledby="themeToggleDropdown">
-              <button id="theme-toggle" class="dropdown-item">Toggle Dark/Light</button>
+              <button id="theme-toggle" class="dropdown-item"> Dark/Light Mode</button>
             </div>
           </div>
           
     </div>
 </nav>
 
+<!-- Bootstrap and jQuery JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Theme toggle script -->
+<script>
+    const toggleButton = document.getElementById('theme-toggle');
+    const body = document.body;
+    // toggle dark adn light theme
+    toggleButton.addEventListener('click', () => {
+        body.classList.toggle('dark-theme');
+        body.classList.toggle('light-theme');
+    });
+</script>
+<style>
+    /* Dark and Light Theme Styles */
+    body.light-theme {
+        background-color: #fff;
+        color: #000;
+    }
+
+    body.dark-theme {
+        background-color: #000;
+        color: #fff;
+    }
+</style>
