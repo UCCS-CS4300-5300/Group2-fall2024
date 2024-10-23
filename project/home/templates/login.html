@@ -1,16 +1,10 @@
-<!DOCTYPE html>
-<html>
+{% extends "base_template.html" %}
+
+{% block title %}Login{% endblock %}
+{% block content %}
 <!-- ensure that static folder is available for use on this template -->
 {% load static %}
-<head>
-      <title>HTML Login Form</title>
-      <!-- use the csss common style v2 -->
-      <link rel="stylesheet" href="{% static 'styles-v2.css' %}">
-</head>
 
-<body>
-      <!-- including common navbar file on login page  -->
-      {% include 'navbar.html' %}
       <div class="main">
             <h1>Gameplan</h1>
             <h3>Enter your login credentials</h3>
@@ -45,6 +39,4 @@
                   </a>
             </p>
       </div>
-</body>
-
-</html>
+      {% endblock %}
