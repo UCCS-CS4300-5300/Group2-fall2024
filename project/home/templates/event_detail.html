@@ -23,7 +23,8 @@
         <p>{{ event.description }}</p>
         <p><strong>Start Time:</strong> {{ event.start_time }}</p>
         <p><strong>End Time:</strong> {{ event.end_time }}</p>
-
+        <p><strong>Priority:</strong> {{ event.get_priority_display }}</p> <!-- Display priority -->
+        
         <!-- Buttons for back to calendar and edit event -->
         <div class="clearfix">
             <a class="btn btn-info left" href="{% url 'calendar' %}">Back to Calendar</a>
