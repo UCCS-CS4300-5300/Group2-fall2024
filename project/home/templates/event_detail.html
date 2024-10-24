@@ -23,8 +23,13 @@
         <p>{{ event.description }}</p>
         <p><strong>Start Time:</strong> {{ event.start_time }}</p>
         <p><strong>End Time:</strong> {{ event.end_time }}</p>
-        <p><strong>Priority:</strong> {{ event.get_priority_display }}</p> <!-- Display priority -->
-        
+        <!-- Display priority -->
+        <p><strong>Priority:</strong> {{ event.get_priority_display }}</p>
+        <!-- Display associated game -->
+        <p><strong>Video Game:</strong> {{ event.game.name }}</p>
+        <p><strong>Platform:</strong> {{ event.game.get_platform_display }}</p>
+        <p><strong>Genre:</strong> {{ event.game.genre }}</p>
+
         <!-- Buttons for back to calendar and edit event -->
         <div class="clearfix">
             <a class="btn btn-info left" href="{% url 'calendar' %}">Back to Calendar</a>
