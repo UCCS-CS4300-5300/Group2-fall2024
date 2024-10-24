@@ -7,7 +7,7 @@ urlpatterns = [
     path('', index, name='index'),
     # include home path on url to match our navbar route
     path('home', index, name='home'),
-    #path('login/',  views.login_view, name ='login'),
+    path('login/',  views.login_view, name ='login'),
     #path('logout/', auth.LogoutView.as_view(template_name ='logout.html'), name ='logout'),
     path('register/', views.register_view, name ='register'),
     path('calendar', CalendarView.as_view(), name = 'calendar' ),
