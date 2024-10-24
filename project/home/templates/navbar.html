@@ -8,8 +8,11 @@
         <ul>
             <li><a href="{% url 'home' %}" class="active">Home</a></li>
             <li><a href="#events">Events</a></li>
-            <li><a href="{% url 'calendar' %}">Calendar</a></li>
-            <li><a href="#settings">Settings</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'calendar' user.id%}">Calendar</a></li>
+                <li><a href="#settings">Settings</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}">Login</a></li>
+            {%endif%}
         </ul>
     </nav>

@@ -28,6 +28,9 @@ class CalendarView(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        # Get the current user from the request
+        user_id = self.request.user.id
+
         # use today's date for the calendar
         d = get_date(self.request.GET.get('month', None))
 
@@ -35,7 +38,7 @@ class CalendarView(generic.ListView):
         cal = Calendar(d.year, d.month)
 
         # Call the formatmonth method, which returns our calendar as a table
-        html_cal = cal.formatmonth(withyear=True)
+        html_cal = cal.formatmonth(user_id=user_id, withyear=True)
         context['calendar'] = mark_safe(html_cal)
         # Get adjacent months
         context['prev_month'] = prev_month(d)
