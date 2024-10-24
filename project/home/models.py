@@ -12,12 +12,21 @@ class Game(models.Model):
         ('XBOX', 'Xbox'),
         ('NS', 'Nintendo Switch'),
     ]
-
+    COLOR_CHOICES = [
+        ('#FF5733', 'Red'),
+        ('#FFA500', 'Orange'),
+        ('#FFFF33', 'Yellow'),
+        ('#33FF57', 'Green'),
+        ('#3357FF', 'Blue'),
+        ('#FF33FF', 'Pink'),
+        ('#800080', 'Purple'),
+    ]
     name = models.CharField(max_length=200)
     genre = models.CharField(max_length=100, blank=True, null=True)
     platform = models.CharField(max_length=50, choices=PLATFORM_CHOICES, blank=True, null=True)
     developer = models.CharField(max_length=100, blank=True, null=True)
     release_date = models.DateField(blank=True, null=True)
+    color = models.CharField(max_length=7, choices=COLOR_CHOICES, default='#FFFFFF')  # Set default color
 
     def __str__(self):
         return self.name
