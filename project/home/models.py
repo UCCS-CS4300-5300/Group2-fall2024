@@ -50,7 +50,8 @@ class Event(models.Model):
     def get_html_url(self):
         # Return the event_detail link for the event
         url = reverse('event_detail', args=(self.id,))
-        return f'<a href="{url}"> {self.title} </a>'
+        # Override default url settings, make font black for readability
+        return f'<a href="{url}" style="color: #000;">{self.title}</a>'
 
 
 
