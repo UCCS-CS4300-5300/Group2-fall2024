@@ -14,5 +14,14 @@
             {% else %}
                 <li><a href="{% url 'login' %}">Login</a></li>
             {%endif%}
+            <li>
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit">Logout</button>
+                    </form>
+                {% endif %}
+            </li>
+
         </ul>
     </nav>
