@@ -10,7 +10,7 @@ from .utils import Calendar
 from .forms import EventForm
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm
 
@@ -102,3 +102,8 @@ def login_view(request):
     else:
         form = AuthenticationForm()
     return render(request, "login.html", {"form" : form})
+
+def logout_view(request):
+    if request.method == "POST":
+        logout(request)
+        return redirect("home")
