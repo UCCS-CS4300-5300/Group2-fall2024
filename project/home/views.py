@@ -13,7 +13,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
-from .forms import UserRegisterForm
+from .forms import UserRegisterForm, GameForm
 
 
 # Create your views here.
@@ -81,6 +81,17 @@ def event_detail(request, event_id):
     event = get_object_or_404(Event, pk=event_id)
     return render(request, 'event_detail.html', {'event': event})
 
+# Function to create a new game
+def create_game(request):
+    if request.method == 'POST':
+        form = GameForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('calendar')  # Redirect to a list of games or wherever
+    else:
+        form = GameForm()
+
+    return render(request, 'create_game.html', {'form': form})
   
 ########### register here ##################################### 
 def Register(request):
