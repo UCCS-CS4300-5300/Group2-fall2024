@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'home',
     'bootstrap5',
     'guardian',
+    'django_q',
 ]
 
 # Add support for authenticating users
@@ -97,6 +98,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'project.wsgi.application'
+
+
+Q_CLUSTER = {
+    'name': 'DjangoQ',
+    'workers': 4,
+    'timeout': 60,
+    'retry': 60,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default',  # Use Django's ORM
+}
 
 
 # Database
