@@ -23,7 +23,7 @@
             <main class="main-content">
                 <img src="{% static 'images/game-icon.jpg' %}" class="img" alt="Game Icon Image">
                 <p>This is a beautiful landing page designed to engage users.</p>
-                <a href="/login" class="btn">Get Started</a>
+                <a href="{% url 'login' %}?next={{ request.path }}" class="btn">Get Started</a>
             </main>
         </div>
         <div id="events" class="tab-pane">
