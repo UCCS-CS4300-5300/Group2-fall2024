@@ -6,13 +6,16 @@ from django.utils.safestring import mark_safe
 import calendar
 
 from .models import *
+from django.contrib.auth.models import User
 from .utils import Calendar
-from .forms import EventForm
+from .forms import *
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegisterForm
+from django.contrib.auth import forms  
+ 
+
 
 
 # Create your views here.
@@ -74,8 +77,11 @@ def event(request, event_id=None):
     
     form = EventForm(request.POST or None, instance=instance)
     if request.POST and form.is_valid():
-        form.save()
-        return HttpResponseRedirect(reverse('calendar'))
+        event = form.save(commit=False)
+        event.user = request.user  # Assign the current user
+        event.save()
+
+        return HttpResponseRedirect(reverse('calendar',  args=[request.user.id]))
     return render(request, 'event.html', {'form': form})
 
 
@@ -84,29 +90,36 @@ def event(request, event_id=None):
   
   
 ########### register here ##################################### 
-def register_view(request):
-    if request.method == "POST" :
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            login( request, form.save())
-            return redirect("login")
-        else:
-            form = UserCreationForm()
-    form = UserCreationForm()
-    return render(request, "register.html", {"form" : form})
-  
-################ login forms################################################### 
-def login_view(request):
-    if request.method == "POST":
-        form = AuthenticationForm(data=request.POST)
-        if form.is_valid():
-            login(request, form.get_user())
-            return redirect("home")
-    else:
-        form = AuthenticationForm()
-    return render(request, "login.html", {"form" : form})
 
-def logout_view(request):
-    if request.method == "POST":
-        logout(request)
-        return redirect("home")
+def register(request):  
+    if request.method == 'POST':  
+        form = CustomUserCreationForm(request.POST)  
+        if form.is_valid():  
+            
+            user = form.save()  
+            messages.success(request, 'Your account has been created successfully!')
+            return redirect("login")
+    else:  
+        form = CustomUserCreationForm()  
+    context = {  
+        'form':form  
+    }  
+    return render(request, 'registration/register.html', context)  
+
+################ user page ################################################### 
+@login_required(login_url = 'login')
+def userPage(request):
+    user_id = request.user.id
+    
+    user = User.objects.get(id=user_id)
+    form = UsersForm(instance = user)
+    
+
+    if request.method == 'POST':
+        form = UsersForm(request.POST, request.FILES, instance = user)
+        if form.is_valid():
+            
+            form.save()
+    
+    context = {'user':user,'form':form}
+    return render(request, 'user.html', context)
