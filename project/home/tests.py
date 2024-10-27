@@ -20,6 +20,23 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'index.html')
 
+    # Test the login view with invalid credentials
+    def test_login_invalid_credentials(self):
+        response = self.client.post(reverse('login'), {
+            'username': 'invaliduser',
+            'password': 'wrongpassword',
+        })
+        self.assertContains(response, 'Please enter a correct username and password. Note that both fields may be case-sensitive.')  # Check for the specific error message
+
+    # Test the login view with valid credentials
+    def test_login_valid_credentials(self):
+        response = self.client.post(reverse('login'), {
+            'username': 'testuser',
+            'password': 'testpass123',
+        })
+        self.assertEqual(response.status_code, 302)  # Expect a redirect after successful login
+        self.assertRedirects(response, reverse('index'))
+
 
 
 class UserCreationTests(TestCase):
