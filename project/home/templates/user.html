@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- ensure that static folder is available for use on this template -->
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles-v2.css' %}">
+    <title>GamePlan</title>
+</head>
+<body>
+    <header class="header">
+        <!-- Game Plan Calendar logo -->
+        
+        <h1>GamePlan Profile</h1>
+
+    </header>
+    <!-- including common navbar file on index page  -->
+    {% include 'navbar.html' %}
+{% block content %}
+<h3>GamePlan Profile</h3>
+
+Welcome, {{user.username}}<br>
+
+
+
+<h3>Update Account Information</h3>
+
+<form  method="POST" action = "" enctype="multipart/form-data">
+    {% csrf_token%}
+    {{form.as_p}}
+    <button class="btn">Update</button>
+</form>
+
+
+
+{% endblock %}
+<footer class="footer">
+    <p>Created by Group 2</p>
+</footer>
+</body>
+</html>

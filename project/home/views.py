@@ -6,14 +6,16 @@ from django.utils.safestring import mark_safe
 import calendar
 
 from .models import *
+from django.contrib.auth.models import User
 from .utils import Calendar
-from .forms import EventForm
-from django.contrib.auth.forms import UserCreationForm  
+from .forms import *
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
-from .forms import UserRegisterForm
+from django.contrib.auth import forms  
+ 
+
 
 
 # Create your views here.
@@ -28,6 +30,9 @@ class CalendarView(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        # Get the current user from the request
+        user_id = self.request.user.id
+
         # use today's date for the calendar
         d = get_date(self.request.GET.get('month', None))
 
@@ -35,7 +40,7 @@ class CalendarView(generic.ListView):
         cal = Calendar(d.year, d.month)
 
         # Call the formatmonth method, which returns our calendar as a table
-        html_cal = cal.formatmonth(withyear=True)
+        html_cal = cal.formatmonth(user_id=user_id, withyear=True)
         context['calendar'] = mark_safe(html_cal)
         # Get adjacent months
         context['prev_month'] = prev_month(d)
@@ -72,8 +77,11 @@ def event(request, event_id=None):
     
     form = EventForm(request.POST or None, instance=instance)
     if request.POST and form.is_valid():
-        form.save()
-        return HttpResponseRedirect(reverse('calendar'))
+        event = form.save(commit=False)
+        event.user = request.user  # Assign the current user
+        event.save()
+
+        return HttpResponseRedirect(reverse('calendar',  args=[request.user.id]))
     return render(request, 'event.html', {'form': form})
 
 
@@ -82,33 +90,38 @@ def event(request, event_id=None):
   
   
 ########### register here ##################################### 
-def Register(request):
+
+def register(request):  
+    if request.method == 'POST':  
+        form = CustomUserCreationForm(request.POST)  
+        if form.is_valid():  
+            
+            user = form.save()  
+            messages.success(request, 'Your account has been created successfully!')
+            return redirect("login")
+    else:  
+        form = CustomUserCreationForm()  
+    context = {  
+        'form':form  
+    }  
+    return render(request, 'registration/register.html', context)  
+
+################ user page ################################################### 
+@login_required(login_url = 'login')
+def userPage(request):
+    user_id = request.user.id
+    
+    user = User.objects.get(id=user_id)
+    form = UsersForm(instance = user)
+    
+
     if request.method == 'POST':
-        form = UserRegisterForm(request.POST)
+        form = UsersForm(request.POST, request.FILES, instance = user)
         if form.is_valid():
+            
             form.save()
-            username = form.cleaned_data.get('username')
-            ################################################################## 
-            messages.success(request, f'Your account has been created ! You are now able to log in')
-            return redirect('login')
-    else:
-        form = UserRegisterForm()
-    return render(request, 'register.html', {'form': form, 'title':'register here'})
-  
-################ login forms################################################### 
-def Login(request):
-    if request.method == 'POST':
-  
-        # AuthenticationForm_can_also_be_used__
-  
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username = username, password = password)
-        if user is not None:
-            form = login(request, user)
-            messages.success(request, f' welcome {username} !!')
-            return redirect('index')
-        else:
-            messages.info(request, f'account done not exit plz sign in')
-    form = AuthenticationForm()
-    return render(request, 'login.html', {'form':form, 'title':'log in'})
+            messages.success(request, 'Your account has been updated successfully!')
+            return redirect("index")
+    
+    context = {'user':user,'form':form}
+    return render(request, 'user.html', context)

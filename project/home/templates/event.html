@@ -9,7 +9,7 @@ Event
 
 {% block content %}
 <div class="clearfix">
-  <a class="btn btn-info left" href="{% url 'calendar' %}"> Calendar </a>
+  <a class="btn btn-info left" href="{% url 'calendar' user.id%}"> Calendar </a>
 </div>
 
 {% if form.errors %}
