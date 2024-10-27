@@ -94,7 +94,7 @@ def create_game(request):
         form = GameForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('calendar')  # Redirect to a list of games or wherever
+            return redirect(reverse('calendar', args=[request.user.id]))  # Redirect to a list of games or wherever
     else:
         form = GameForm()
 
