@@ -120,6 +120,8 @@ def userPage(request):
         if form.is_valid():
             
             form.save()
+            messages.success(request, 'Your account has been updated successfully!')
+            return redirect("index")
     
     context = {'user':user,'form':form}
     return render(request, 'user.html', context)

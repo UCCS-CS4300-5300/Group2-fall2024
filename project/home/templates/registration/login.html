@@ -17,6 +17,14 @@
     </header>
     
     {% include 'navbar.html' %}
+    {% if messages %}  
+        <ul>   
+            {% for message in messages %}  
+                <li>{{ message }}</li>  
+                {% endfor %}  
+        </ul>   
+    {% endif %}  
+    
 <h1> Login </h1>
 <form class="form-with-validation" action= "{% url 'login' %}" method="post"> 
   {{form}}
