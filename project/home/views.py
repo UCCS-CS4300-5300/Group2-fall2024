@@ -4,16 +4,15 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.views import generic
 from django.utils.safestring import mark_safe
 import calendar
-
 from .models import *
 from django.contrib.auth.models import User
 from .utils import Calendar
 from .forms import *
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, forms
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import forms  
+
  
 
 
@@ -84,10 +83,22 @@ def event(request, event_id=None):
         return HttpResponseRedirect(reverse('calendar',  args=[request.user.id]))
     return render(request, 'event.html', {'form': form})
 
+# Function to return the detailed view of a specific event
+def event_detail(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+    return render(request, 'event_detail.html', {'event': event})
 
+# Function to create a new game
+def create_game(request):
+    if request.method == 'POST':
+        form = GameForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('calendar')  # Redirect to a list of games or wherever
+    else:
+        form = GameForm()
 
-
-  
+    return render(request, 'create_game.html', {'form': form})
   
 ########### register here ##################################### 
 
@@ -125,3 +136,21 @@ def userPage(request):
     
     context = {'user':user,'form':form}
     return render(request, 'user.html', context)
+
+    ################ login forms################################################### 
+def Login(request):
+    if request.method == 'POST':
+  
+        # AuthenticationForm_can_also_be_used__
+  
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username = username, password = password)
+        if user is not None:
+            form = login(request, user)
+            messages.success(request, f' welcome {username} !!')
+            return redirect('index')
+        else:
+            messages.info(request, f'account done not exit plz sign in')
+    form = AuthenticationForm()
+    return render(request, 'login.html', {'form':form, 'title':'log in'})

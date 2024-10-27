@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm, DateInput
-from .models import Event
+from .models import Event, Game
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError  
@@ -60,6 +60,13 @@ class EventForm(ModelForm):
         self.fields['start_time'].input_formats = ('%Y-%m-%dT%H:%M',)
         self.fields['end_time'].input_formats = ('%Y-%m-%dT%H:%M',)
 
+class GameForm(forms.ModelForm):
+    class Meta:
+        model = Game
+        fields = '__all__'
+        widgets = {
+            'release_date': forms.DateInput(attrs={'type': 'date'}),
+        }
 class UsersForm(ModelForm):
     class Meta:
         model = User

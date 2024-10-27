@@ -1,0 +1,20 @@
+<!-- This is the HTMl template for creating a new game. -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Create Game</title>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Create a New Game</h1>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Create Game</button>
+        </form>
+
+    </div>

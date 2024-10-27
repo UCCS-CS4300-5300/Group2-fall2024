@@ -19,4 +19,8 @@ urlpatterns = [
     path('calendar/<int:user_id>', CalendarView.as_view(), name = 'calendar' ),
     re_path(r'^event/new/$', views.event, name='event_new'),
     re_path(r'^event/edit/(?P<event_id>\d+)/$', views.event, name='event_edit'),
+    # Add URL path for the event detail view
+    path('event/<int:event_id>/', views.event_detail, name='event_detail'),
+    # URl path for the create game view
+    path('calendar/create_game/', views.create_game, name='create_game'),
 ]

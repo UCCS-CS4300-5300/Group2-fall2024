@@ -1,5 +1,7 @@
 # home/utils.py 
 
+# home/utils.py 
+
 from datetime import datetime, timedelta
 from calendar import HTMLCalendar
 from .models import Event
@@ -21,7 +23,10 @@ class Calendar(HTMLCalendar):
 
 		d=''
 		for event in events_per_day:
-			d += f'<li> {event.get_html_url} </li>'
+			# Use the game's color, default to white 
+			event_color = event.game.color if event.game else '#FFFFFF'
+			# Color code the event based on the game
+			d += f'<li style="background-color: {event_color}; padding: 5px; border-radius: 5px; margin-bottom: 5px; font-weight: bold;">{event.get_html_url}</li>'
 
 		if day != 0:
 			return f"<td><span class='date'>{day}</span><ul> {d} </ul></td>"
