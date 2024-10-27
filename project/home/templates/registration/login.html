@@ -1,13 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base_template.html" %}
+
+{% block title %}Login{% endblock %}
+{% block content %}
     <!-- ensure that static folder is available for use on this template -->
 {% load static %}
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'styles-v2.css' %}">
-    <title>GamePlan Login</title>
-</head>
+
 <body>
     <header class="header">
         <!-- Game Plan Calendar logo -->
@@ -16,7 +13,7 @@
 
     </header>
     
-    {% include 'navbar.html' %}
+ 
     {% if messages %}  
         <ul>   
             {% for message in messages %}  
@@ -34,4 +31,5 @@
   <p><a href="{% url 'register' %}"" class="btn" role="button">Register</a></p> 
 </form>
 </body>
-</html>
+
+{% endblock %}
