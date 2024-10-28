@@ -14,11 +14,20 @@
 
 <h3>GamePlan Profile</h3>
 
-Welcome, {{user.username}}<br>
+{% if user.first_name %}
+    
+    Welcome, {{user.first_name}}<br>
+
+{% else %}
+        
+    Welcome, {{user.username}}<br>
+
+{%endif%}
 
 
 
-<h3>Update Account Information</h3>
+
+<h3 class="mt-4">Update Account Information</h3>
 
 <form  method="POST" action = "" enctype="multipart/form-data">
     {% csrf_token%}
