@@ -1,44 +1,51 @@
+{% extends "base_template.html" %} 
 {% load static %}
 {% load template_tags %}
-<!doctype html>
-<html lang="en">
 
-<head>
-  {% load bootstrap5 %}
-  {% bootstrap_css %}
-  {% bootstrap_javascript %}
-  <!-- Required meta tags -->
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css">
-  <link rel="stylesheet" type="text/css" href="{% static 'calendar/styles.css' %}">
-  <title>Django Calendar App</title>
-</head>
-<body>
+{% block title %}Calendar{% endblock %}
+{% block content %}
+  <head>
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'calendar/styles.css' %}">
+    
+  </head>
 
-  
-  
-  {% block content %}
 
-  <div class="clearfix">
-    <a class="btn btn-info left" href="{% url 'calendar' user.id %}?{{ prev_month }}"> Previous Month </a>
-    <a class="btn btn-info left" href="{% url 'create_game' %}">Add a New Game</a>
-    <a class="btn btn-info right" href="{% url 'calendar' user.id%}?{{ next_month }}"> Next Month </a>
-    <a class="btn btn-info right" href="{% url 'event_new' %}"> New Event </a>
+    
+    
+  <div>   
+
+    <div class="clearfix">
+      <a class="btn btn-info left" href="{% url 'calendar' user.id %}?{{ prev_month }}"> Previous Month </a>
+      <a class="btn btn-info left" href="{% url 'create_game' %}">Add a New Game</a>
+      <a class="btn btn-info right" href="{% url 'calendar' user.id%}?{{ next_month }}"> Next Month </a>
+      <a class="btn btn-info right" href="{% url 'event_new' %}"> New Event </a>
+    </div>
+
+      {{calendar}}
   </div>
 
-    {{calendar}}
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-      crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-      crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-      crossorigin="anonymous"></script>
   {% endblock %}
-</body>
-</html>
+
+{% block scripts %}
+
+      <!-- Optional JavaScript -->
+       <!--
+       jQuery first, then Popper.js, then Bootstrap JS 
+      <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+      -->
+  {% endblock %}
+

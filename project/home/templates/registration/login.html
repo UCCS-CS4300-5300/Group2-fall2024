@@ -26,9 +26,9 @@
 <form class="form-with-validation" action= "{% url 'login' %}" method="post"> 
   {{form}}
   {% csrf_token %}
-  <button class="btn">Submit</button>
+  <button class="btn" type = "submit">Submit</button>
   
-  <p><a href="{% url 'register' %}"" class="btn" role="button">Register</a></p> 
+  <p class="mt-4"><a href="{% url 'register' %}"" class="btn" role="button">Register</a></p> 
 </form>
 </body>
 

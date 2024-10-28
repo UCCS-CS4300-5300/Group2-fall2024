@@ -35,6 +35,9 @@ class CalendarView(generic.ListView):
         # use today's date for the calendar
         d = get_date(self.request.GET.get('month', None))
 
+        # Get user-specific information about theme
+        current_theme = self.request.COOKIES.get('theme', 'light')  # Default to 'light'
+
         # Instantiate our calendar class with today's year and date
         cal = Calendar(d.year, d.month)
 
@@ -44,6 +47,9 @@ class CalendarView(generic.ListView):
         # Get adjacent months
         context['prev_month'] = prev_month(d)
         context['next_month'] = next_month(d)
+
+        #add theme
+        context['current_theme'] = current_theme
 
         return context
 
@@ -154,3 +160,9 @@ def Login(request):
             messages.info(request, f'account done not exit plz sign in')
     form = AuthenticationForm()
     return render(request, 'login.html', {'form':form, 'title':'log in'})
+
+################ logout ################################################### 
+
+def CustomLogoutView(self, request):
+        logout(request)  # Log the user out
+        return redirect("index")  # Redirect to the home page or your desired URL

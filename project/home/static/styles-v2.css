@@ -1,9 +1,10 @@
-body {
+body, #content {
     font-family: 'Courier New', Courier, monospace; /* Change to a gaming font if desired */
-    background-color: #000; /* Black background */
-    color: #fff; /* White text for contrast */
     margin: 0;
     padding: 0;
+    display: flex; /* Add display flex to body */
+    flex-direction: column; /* Make sure the body is a column flex container */
+    min-height: 100vh; /* Ensure it covers the full height of the viewport */
 }
 
 /* Logo styling */
@@ -13,9 +14,9 @@ body {
     /* display: inline-block; */
     float: left;
     margin-top: 10px !important;
-    margin-right: 24px !important;
     margin-bottom: 24px !important;
     margin-left: 10px !important;
+    
 }
 
 /* Header Styles */
@@ -26,13 +27,14 @@ body {
     text-align: center;
     font-size: 2em; /* Increase font size for the title */
     text-transform: uppercase; /* Uppercase for a bolder look */
-    margin-top: 30px !important;
+
 }
 
 /* Navigation Styles */
 .nav {
-    background-color: #222; /* Dark background for the navbar */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    font-family: 'Courier New', Courier, monospace; /* Change to a gaming font if desired */
+    background-color: #222 !important;/* Dark background for the navbar */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5) !important;
     position: fixed; /* Fix navbar to the top */
     top: 0;
     left: 0;
@@ -41,35 +43,35 @@ body {
 }
 
 .nav ul {
-    list-style-type: none;
-    padding: 10px 0;
+    list-style-type: none !important;
+    padding: 10px 0 !important;
     
-    text-align: center;
+    text-align: center !important;
     /* margin-left: -50px; */
 }
 
 .nav li {
-    display: inline;
-    margin: 0 15px;
+    display: inline !important;
+    margin: 0 15px !important;
 }
 .nav a {
-    text-decoration: none;
+    text-decoration: none !important;
     
-    color: #4CAF50; /* Green link color */
-    padding: 10px 15px;
-    border: 1px solid transparent;
-    border-radius: 5px;
-    transition: background-color 0.3s;
+    color: #4CAF50 !important; /* Green link color */
+    padding: 10px 15px !important;
+    border: 1px solid transparent !important;
+    border-radius: 5px !important;
+    transition: background-color 0.3s !important;
     
 }
 
 .nav a:hover {
-    background-color: rgba(76, 175, 80, 0.2); /* Light green on hover */
+    background-color: rgba(76, 175, 80, 0.2) !important; /* Light green on hover */
 }
 
 .nav a.active {
-    font-weight: bold;
-    border-bottom: 2px solid #4CAF50;
+    font-weight: bold !important;
+    border-bottom: 2px solid #4CAF50 !important;
 }
 
 /* Main Content Styles */
@@ -87,17 +89,17 @@ img {
 
 /* Button Styles */
 .btn {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: #4CAF50; /* Green button */
-    color: white;
+    display: inline-block !important;
+    padding: 10px 20px; 
+    background-color: #4CAF50 !important;/* Green button */ 
+    color: white !important;
     text-decoration: none;
     border-radius: 5px;
-    margin-top: 20px;
+    margin-top: 0 px;
 }
 
 .btn:hover {
-    background-color: #388E3C; /* Darker green on hover */
+    background-color: #28692b !important; /* Darker green on hover */
 }
 
 /* Footer Styles */
@@ -106,10 +108,9 @@ img {
     padding: 1rem 0;
     background-color: #343a40; /* Dark footer */
     color: white;
-    position: relative;
-    bottom: 0;
     width: 100%;
-    margin-top: 50px; /* Space below content */
+    margin-top: auto; /* Space below content */
+    
 }
 
 /* Responsive: display on different screens devices */

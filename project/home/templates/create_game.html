@@ -1,6 +1,7 @@
-<!-- This is the HTMl template for creating a new game. -->
-<!doctype html>
-<html lang="en">
+{% extends "base_template.html" %}
+
+{% block title %}Add Game{% endblock %}
+{% block content %}
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -18,3 +19,5 @@
         </form>
 
     </div>
+
+{% endblock %}
