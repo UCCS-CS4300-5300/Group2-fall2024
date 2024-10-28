@@ -23,13 +23,15 @@
     {% endif %}  
     
 <h1> Login </h1>
-<form class="form-with-validation" action= "{% url 'login' %}" method="post"> 
-  {{form}}
-  {% csrf_token %}
-  <button class="btn" type = "submit">Submit</button>
-  
-  <p class="mt-4"><a href="{% url 'register' %}"" class="btn" role="button">Register</a></p> 
-</form>
+<div class="col-md-6">
+    <form class="form-with-validation mb-3" action= "{% url 'login' %}" method="post"> 
+    {{form}}
+    {% csrf_token %}
+    <button class="btn" type = "submit">Submit</button>
+    
+    <p class="mt-4 mb-3"><a href="{% url 'register' %}"" class="btn" role="button">Register</a></p> 
+    </form>
+</div>
 </body>
 
 {% endblock %}

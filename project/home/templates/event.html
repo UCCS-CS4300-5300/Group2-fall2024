@@ -23,9 +23,9 @@ New Event
     {% endfor %}
 {% endif %}
 
-<form method="post">
+<form class="container mt-5" method="post">
   {% csrf_token %}
-  <table class="form form-table">
+  <table class="form-table">
     {{ form }}
     <tr><td colspan="2">
       <div class="clearfix">
