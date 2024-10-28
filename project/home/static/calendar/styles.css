@@ -73,3 +73,28 @@ a {
   padding: 5px;
   width: 100%;
 }
+
+/* Dark mode styles */
+[data-theme="dark"] .calendar {
+  background-color: #1e1e1e;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .calendar tr,
+[data-theme="dark"] .calendar td {
+  border: 1px solid #5c5c5c;
+}
+
+[data-theme="dark"] .calendar th {
+  color: #ffffff;
+  border-bottom: 2px solid #5c5c5c;
+}
+
+[data-theme="dark"] .date {
+  color: #f0f0f0;
+}
+[data-theme="dark"] .btn {
+  color: white;
+  background-color: transparent;
+  box-shadow: 0 0 0 0;
+}
