@@ -13,7 +13,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, forms
 from django.contrib.auth.decorators import login_required
 from guardian.decorators import permission_required_or_403
-
+from django.core.exceptions import PermissionDenied
  
 
 
@@ -73,11 +73,15 @@ def next_month(d):
     month = 'month=' + str(next_month.year) + '-' + str(next_month.month)
     return month
 
-@permission_required_or_403('view_event', (Event, 'id', 'event_id'))
+
 def event(request, event_id=None):
-    instance = Event()
+
     if event_id:
         instance = get_object_or_404(Event, pk=event_id)
+        if not request.user.has_perm('view_event', instance):
+            messages.error(request, "You do not have permission to edit this event.")
+            return HttpResponse(status=204)
+            
     else:
         instance = Event()
     
@@ -91,10 +95,12 @@ def event(request, event_id=None):
     return render(request, 'event.html', {'form': form})
 
 # Function to return the detailed view of a specific event
-@permission_required_or_403('view_event', (Event, 'id', 'event_id'))
 def event_detail(request, event_id):
     event = get_object_or_404(Event, pk=event_id)
-    return render(request, 'event_detail.html', {'event': event})
+    if request.user.has_perm('view_event', event):
+        return render(request, 'event_detail.html', {'event': event})
+    else:
+        return HttpResponse(status=204)
 
 @login_required(login_url = 'login')
 #method to delete a event for a user
