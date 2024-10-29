@@ -1,16 +1,12 @@
+{% extends "base_template.html" %} 
 {% load static %}
-<!doctype html>
-<html lang="en">
-
 
 {% block title %}
-Event
+New Event
 {% endblock %}
 
 {% block content %}
-<div class="clearfix">
-  <a class="btn btn-info left" href="{% url 'calendar' user.id%}"> Calendar </a>
-</div>
+<link rel="stylesheet" type="text/css" href="{% static 'calendar/styles.css' %}">
 
 {% if form.errors %}
     {% for field in form %}
@@ -27,11 +23,16 @@ Event
     {% endfor %}
 {% endif %}
 
-<form method="post">
+<form class="container mt-5" method="post">
   {% csrf_token %}
-  <table class="form form-table">
+  <table class="form-table">
     {{ form }}
-    <tr><td colspan="2"><button type="submit" class="btn btn-info right"> Submit </button></td></tr>
+    <tr><td colspan="2">
+      <div class="clearfix">
+        <a class="btn left" href="{% url 'calendar' user.id%}">Back to Calendar </a>
+        <button type="submit" class="btn right"> Submit </button>
+      </div>
+    </td></tr>
   </table>
 </form>
 {% endblock %}

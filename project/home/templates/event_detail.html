@@ -1,0 +1,40 @@
+{% extends "base_template.html" %} 
+
+<head>
+    {% load static %}  <!-- Load the static tag library -->
+
+
+    <link rel="stylesheet" type="text/css" href="{% static 'calendar/styles.css' %}">
+
+    {% block title %}Event Details{% endblock %}
+</head>
+
+{% block content %}
+
+
+<body>
+
+    <div class="container mt-5">
+        <h1>{{ event.title }}</h1>
+        <p>{{ event.description }}</p>
+        <p><strong>Start Time:</strong> {{ event.start_time }}</p>
+        <p><strong>End Time:</strong> {{ event.end_time }}</p>
+        <!-- Display priority -->
+        <p><strong>Priority:</strong> {{ event.get_priority_display }}</p>
+        <!-- Display associated game -->
+        <p><strong>Video Game:</strong> {{ event.game.name }}</p>
+        <p><strong>Platform:</strong> {{ event.game.get_platform_display }}</p>
+        <p><strong>Genre:</strong> {{ event.game.genre }}</p>
+
+        <!-- Buttons for back to calendar and edit event -->
+        <div class="clearfix">
+            <a class="btn left" href="{% url 'calendar' user.id %}">Back to Calendar</a>
+            <a class="btn right" href="{% url 'event_edit' event.id %}">Edit Event</a>
+        </div>
+    </div>
+
+    
+</body>
+
+</html>
+{% endblock %}
