@@ -17,7 +17,7 @@ class Calendar(HTMLCalendar):
     # filter events by day
 	def formatday(self, day, events):
 
-		events_per_day = events.filter(start_time__day=day)
+		events_per_day = events.filter(start_time__day=day).order_by("-priority", "start_time")
 		
 
 		d=''
