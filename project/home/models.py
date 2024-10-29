@@ -2,6 +2,7 @@ from django.db import models
 from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from guardian.shortcuts import assign_perm
 
 # Create your models here.
 
@@ -58,6 +59,9 @@ class Event(models.Model):
         # Override default url settings, make font black for readability
         return f'<a href="{url}" style="color: #000;">{self.title}</a>'
 
-
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Grant 'view_event' permission to the assigned user
+        assign_perm('view_event', self.user, self)
 
 User = get_user_model()

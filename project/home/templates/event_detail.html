@@ -30,6 +30,7 @@
         <div class="clearfix">
             <a class="btn left" href="{% url 'calendar' user.id %}">Back to Calendar</a>
             <a class="btn right" href="{% url 'event_edit' event.id %}">Edit Event</a>
+            <a class="btn center" href="{% url 'delete_event' user.id event.id%}" role="button" style="background-color: red !important;">Delete</a>
         </div>
     </div>
 

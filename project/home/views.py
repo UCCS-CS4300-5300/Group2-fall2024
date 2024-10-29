@@ -12,6 +12,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, forms
 from django.contrib.auth.decorators import login_required
+from guardian.decorators import permission_required_or_403
 
  
 
@@ -72,7 +73,7 @@ def next_month(d):
     month = 'month=' + str(next_month.year) + '-' + str(next_month.month)
     return month
 
-
+@permission_required_or_403('view_event', (Event, 'id', 'event_id'))
 def event(request, event_id=None):
     instance = Event()
     if event_id:
@@ -90,9 +91,29 @@ def event(request, event_id=None):
     return render(request, 'event.html', {'form': form})
 
 # Function to return the detailed view of a specific event
+@permission_required_or_403('view_event', (Event, 'id', 'event_id'))
 def event_detail(request, event_id):
     event = get_object_or_404(Event, pk=event_id)
     return render(request, 'event_detail.html', {'event': event})
+
+@login_required(login_url = 'login')
+#method to delete a event for a user
+def deleteEvent(request, user_id, id):
+
+    #sets the event based on the id from the url
+    event = get_object_or_404(Event, pk=id)
+
+    #check the method is as expected
+    if request.method == 'POST':
+        #delete the event using funtion delete()
+        event.delete()
+        # Redirect back to the Calend list page
+        return redirect('calendar', user_id)
+
+    #pass in the event into the dictionary 
+    context = {'event': event}
+    #go to delete template with this information
+    return render(request, 'delete.html', context)
 
 # Function to create a new game
 def create_game(request):
