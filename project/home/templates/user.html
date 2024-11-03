@@ -1,0 +1,45 @@
+{% extends "base_template.html" %}
+
+{% block title %}Account Settings{% endblock %}
+{% block content %}
+    <!-- ensure that static folder is available for use on this template -->
+{% load static %}
+
+<header class="header">
+    <!-- Game Plan Calendar logo -->
+    
+    <h1>Account</h1>
+
+</header>
+
+<h3>GamePlan Profile</h3>
+
+{% if user.first_name %}
+    
+    Welcome, {{user.first_name}}<br>
+
+{% else %}
+        
+    Welcome, {{user.username}}<br>
+
+{%endif%}
+
+
+
+
+<h3 class="mt-4">Update Account Information</h3>
+
+<form  method="POST" action = "" enctype="multipart/form-data">
+    {% csrf_token%}
+    {{form.as_p}}
+    <button class="btn">Update</button>
+</form>
+
+
+
+{% endblock %}
+<footer class="footer">
+    <p>Created by Group 2</p>
+</footer>
+</body>
+</html>

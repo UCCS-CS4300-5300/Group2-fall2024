@@ -1,5 +1,5 @@
 # tasks.py
-
+import os
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django_q.tasks import async_task
@@ -24,9 +24,19 @@ def send_event_reminders():
         content = f'<p>You have an event: <strong>{event.title}</strong> scheduled for today.</p>'
         
         # Send the email using SendGrid API
+
         async_task('home.tasks.send_email_task', subject, user_email, content)
 
 def send_email_task(subject, to_email, content):
+    print("Current SendGrid API Key:", os.environ.get('SENDGRID_API_KEY'))  # Debugging line
     status, body, headers = send_email(subject, to_email, content)
-    if status != 202:  # 202 is the success code for SendGrid API
+    
+    if status == 202:
+        print(f"Email successfully sent to {to_email}.")
+    else:
         print(f"Failed to send email to {to_email}: {body}")
+
+
+
+
+# The API Key must be available to qcluster and runserver

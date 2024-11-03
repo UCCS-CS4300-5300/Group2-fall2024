@@ -12,6 +12,7 @@ def send_email(subject, to_email, content):
     try:
         sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
         response = sg.send(message)
-        return response.status_code, response.body, response.headers
+        # Explicitly return a tuple with three values
+        return (response.status_code, response.body, response.headers)
     except Exception as e:
-        return str(e)
+        return (None, str(e), None)
