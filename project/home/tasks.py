@@ -19,7 +19,7 @@ def send_event_reminders():
 
     for event in events_today:
         # user_email = event.user.email  # Assuming each event is linked to a user
-        user_email = 'gameplanuccs@gmail.com'
+        user_email = event.user.email
         subject = 'Reminder: Event Today'
         content = f'<p>You have an event: <strong>{event.title}</strong> scheduled for today.</p>'
         
