@@ -15,7 +15,7 @@ urlpatterns = [
     path('accounts/register/', register, name = "register"),
     path('accounts/profile/', views.userPage, name = "user_page"),
     path('accounts/update_password/', views.update_password, name = "update_password"),
-    path('accounts/update_account/', views.update_password, name = "update_account"),
+    path('accounts/update_account/', views.update_account, name = "update_account"),
     
     path('calendar/<int:user_id>', CalendarView.as_view(), name = 'calendar' ),
     re_path(r'^event/new/$', views.event, name='event_new'),
