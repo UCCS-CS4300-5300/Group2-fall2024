@@ -1,45 +1,58 @@
 {% extends "base_template.html" %}
 
 {% block title %}Account Settings{% endblock %}
+
 {% block content %}
-    <!-- ensure that static folder is available for use on this template -->
 {% load static %}
 
 <header class="header">
-    <!-- Game Plan Calendar logo -->
-    
-    <h1>Account</h1>
-
+    <h1>GamePlan Profile</h1>
 </header>
 
-<h3>GamePlan Profile</h3>
+<div class="container mt-5">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-12 col-md-8 col-lg-6 col-xl-4">
+            <!-- <h3 class="text-center mb-4">Update Account Information</h3> -->
+            
+            <div class="text-center mb-4">
+                {% if user.first_name %}
+                    <p>Welcome, {{ user.first_name }}</p>
+                {% else %}
+                    <p>Welcome, {{ user.username }}</p>
+                {% endif %}
+            </div>
 
-{% if user.first_name %}
-    
-    Welcome, {{user.first_name}}<br>
+            <!-- Display success and error messages -->
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-{% else %}
-        
-    Welcome, {{user.username}}<br>
+            <!-- Update Account Form -->
+            <form method="POST" action="" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                {{ form.as_p }}
+                <button class="btn btn-block mt-3" type="submit">Update</button>
+            </form>
 
-{%endif%}
-
-
-
-
-<h3 class="mt-4">Update Account Information</h3>
-
-<form  method="POST" action = "" enctype="multipart/form-data">
-    {% csrf_token%}
-    {{form.as_p}}
-    <button class="btn">Update</button>
-</form>
-
-
+            <!-- Update Password Form -->
+            <h3 class="text-center mt-5 mb-4">Update Your Password Information</h3>
+            <form method="POST" action="{% url 'update_password' %}">
+                {% csrf_token %}
+                {{ password_form.non_field_errors }}
+                {{ password_form.as_p }}
+                <button class="btn btn-block mt-3" type="submit">Update Password</button>
+            </form>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
-<footer class="footer">
+
+<footer class="footer mt-5 text-center">
     <p>Created by Group 2</p>
 </footer>
-</body>
-</html>

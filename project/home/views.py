@@ -12,8 +12,9 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, forms
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 
- 
 
 
 
@@ -130,9 +131,9 @@ def userPage(request):
     
     user = User.objects.get(id=user_id)
     form = UsersForm(instance = user)
-    
+    password_form = PasswordChangeForm(request.user)
 
-    if request.method == 'POST':
+    if request.method == 'POST' and 'password_form' not in request.POST:
         form = UsersForm(request.POST, request.FILES, instance = user)
         if form.is_valid():
             
@@ -160,6 +161,27 @@ def Login(request):
             messages.info(request, f'account done not exit plz sign in')
     form = AuthenticationForm()
     return render(request, 'login.html', {'form':form, 'title':'log in'})
+
+
+################ Update Password################################################### 
+@login_required(login_url='login')
+def update_password(request):
+    if request.method == 'POST':
+        password_form = PasswordChangeForm(request.user, request.POST)
+        if password_form.is_valid():
+            user = password_form.save()
+            update_session_auth_hash(request, user)  # Keeps the user logged in after password change
+            messages.success(request, 'Your password has been updated successfully!')
+            return redirect('user_page')
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        password_form = PasswordChangeForm(request.user)
+
+    return render(request, 'user.html', {
+        'password_form': password_form,
+        'form': UsersForm(instance=request.user)  # Ensure account form is also loaded
+    })
 
 ################ logout ################################################### 
 
