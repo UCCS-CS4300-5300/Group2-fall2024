@@ -164,24 +164,28 @@ def Login(request):
 
 
 ################ Update Password################################################### 
-@login_required(login_url='login')
-def update_password(request):
+@login_required
+def update_account(request):
+    user_form = UsersForm(instance=request.user)
     if request.method == 'POST':
-        password_form = PasswordChangeForm(request.user, request.POST)
+        user_form = UsersForm(request.POST, instance=request.user)
+        if user_form.is_valid():
+            user_form.save()
+            messages.success(request, 'Your account has been updated successfully!.')
+            return redirect('user_page')
+    return render(request, 'update_account.html', {'user_form': user_form})
+
+@login_required
+def update_password(request):
+    password_form = CustomPasswordChangeForm(user=request.user)
+    if request.method == 'POST':
+        password_form = CustomPasswordChangeForm(request.user, request.POST)
         if password_form.is_valid():
             user = password_form.save()
-            update_session_auth_hash(request, user)  # Keeps the user logged in after password change
+            update_session_auth_hash(request, user)  # Prevents logout after password change
             messages.success(request, 'Your password has been updated successfully!')
             return redirect('user_page')
-        else:
-            messages.error(request, 'Please correct the error below.')
-    else:
-        password_form = PasswordChangeForm(request.user)
-
-    return render(request, 'user.html', {
-        'password_form': password_form,
-        'form': UsersForm(instance=request.user)  # Ensure account form is also loaded
-    })
+    return render(request, 'update_password.html', {'password_form': password_form})
 
 ################ logout ################################################### 
 
