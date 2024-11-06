@@ -14,6 +14,7 @@ from django.contrib.auth import authenticate, login, logout, forms
 from django.contrib.auth.decorators import login_required
 from guardian.decorators import permission_required_or_403
 from django.core.exceptions import PermissionDenied
+from django.utils import timezone
  
 
 
@@ -193,3 +194,26 @@ def Login(request):
 def CustomLogoutView(self, request):
         logout(request)  # Log the user out
         return redirect("index")  # Redirect to the home page or your desired URL
+
+@login_required(login_url = 'login')
+def todo_list(request):
+    events = Event.objects.filter(user=request.user, start_time__date=timezone.now().date()).order_by('game__name', '-priority')
+
+    # Organize events by game
+    games_with_events = {}
+
+    for event in events:
+        game = event.game  # This gives you the actual Game instance
+        game_name = game.name if game else "No Game"
+        if game_name not in games_with_events:
+            games_with_events[game_name] = {
+                'game': game,  # Pass the actual Game object here
+                'events': []   # Create a list for events
+            }
+        games_with_events[game_name]['events'].append(event)
+    
+    context = {
+        'games_with_events': games_with_events
+    }
+
+    return render(request, 'todo_list.html', context)

@@ -26,4 +26,5 @@ urlpatterns = [
     path('calendar/create_game/', views.create_game, name='create_game'),
     #url for event deletion that takes in user id and recipe id
     path('event_delete/<int:user_id>/<int:id>', views.deleteEvent, name='delete_event'),
+    path('todo-list/', views.todo_list, name='todo_list'),
 ]
