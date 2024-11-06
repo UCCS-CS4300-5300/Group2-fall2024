@@ -1,0 +1,48 @@
+{% extends "base_template.html" %}
+
+{% block title %}TODO LIST{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<header class="header">
+    <!-- Game Plan Calendar logo or other content -->
+    <h1>To-Do List of Upcoming Events</h1>
+</header>
+
+<div class="todo-list-page"> <!-- Specific class for this page -->
+    {% if games_with_events %}
+        <div class="main-content">
+            {% for game_name, game_data in games_with_events.items %}
+                <div class="game-section">
+                    <!-- Display Game Image -->
+                    {% if game_data.game.picture_link %}
+                        <img src="{{ game_data.game.picture_link }}" alt="Image for {{ game_name }}" class="game-image">
+                    {% endif %}
+
+                    <h2>{{ game_name }}</h2>
+                    <ul class="event-list">
+                        {% for event in game_data.events %}
+                            <li class="event-item">
+                                <div class="event-details">
+                                    <p><strong>Title:</strong> 
+                                        <a href="{% url 'event_detail' event.id %}" style="color: #4CAF50; text-decoration: none;">
+                                            {{ event.title }}
+                                        </a>
+                                    </p>
+                                    <p><strong>Description: {{ event.description }}</strong></p>
+                                    <p><strong>Priority: {{ event.get_priority_display }}</strong></p>
+                                    <p><strong>Start Time: {{ event.start_time|date:"F j, Y, g:i a" }}</strong></p>
+                                    <p><strong>End Time: {{ event.end_time|date:"F j, Y, g:i a" }}</strong></p>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No events scheduled for today.</p>
+    {% endif %}
+</div>
+{% endblock %}
