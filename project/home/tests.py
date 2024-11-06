@@ -120,3 +120,98 @@ class EventTests(TestCase):
         # Fetch the updated event from the database
         updated_event = Event.objects.get(id=self.event.id)
         self.assertEqual(updated_event.title, 'Updated Event')
+
+
+class EventDeletionTests(TestCase):
+    def setUp(self):
+        # Create a user and log them in
+        self.user = User.objects.create_user(username='testuser', password='testpass123')
+        self.client.login(username='testuser', password='testpass123')
+
+        # Create an event for the user
+        self.event = Event.objects.create(
+            title='Test Event',
+            description='Test Description',
+            start_time=timezone.now() + timedelta(days=1),
+            end_time=timezone.now() + timedelta(days=1, hours=1),
+            user=self.user
+        )
+
+    def test_delete_event(self):
+        # Attempt to delete the event
+        response = self.client.post(reverse('delete_event', args=[self.user.id, self.event.id]))
+
+        # Check if the response is a redirect (successful deletion)
+        self.assertEqual(response.status_code, 302)
+
+        # Confirm the event was deleted
+        event_exists = Event.objects.filter(id=self.event.id).exists()
+        self.assertFalse(event_exists)
+
+
+class EventDetailTests(TestCase):
+    def setUp(self):
+        # Create two users
+        self.user = User.objects.create_user(username='testuser', password='testpass123')
+        self.other_user = User.objects.create_user(username='otheruser', password='testpass456')
+
+        # Create an event for the first user
+        self.event = Event.objects.create(
+            title='User Event',
+            description='Event for testing details',
+            start_time=timezone.now() + timedelta(days=1),
+            end_time=timezone.now() + timedelta(days=1, hours=2),
+            user=self.user
+        )
+
+    def test_event_detail_view_user_has_permission(self):
+        self.client.login(username='testuser', password='testpass123')
+        response = self.client.get(reverse('event_detail', args=[self.event.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'event_detail.html')
+        self.assertContains(response, 'User Event')
+
+
+
+class TodoListViewTests(TestCase):
+    def setUp(self):
+        # Create two users and log in the first one
+        self.user = User.objects.create_user(username='testuser', password='testpass123')
+        self.other_user = User.objects.create_user(username='otheruser', password='testpass456')
+        self.client.login(username='testuser', password='testpass123')
+
+        # Create events for each user
+        self.event1 = Event.objects.create(
+            title='User Event',
+            start_time=timezone.now() + timedelta(hours=1),
+            end_time=timezone.now() + timedelta(hours=2),
+            user=self.user
+        )
+        self.event2 = Event.objects.create(
+            title='Other User Event',
+            start_time=timezone.now() + timedelta(hours=3),
+            end_time=timezone.now() + timedelta(hours=4),
+            user=self.other_user
+        )
+
+    def test_todo_list_view_shows_only_user_events(self):
+        response = self.client.get(reverse('todo_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'User Event')
+        self.assertNotContains(response, 'Other User Event')
+
+class GameCreationTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='testpass123')
+        self.client.login(username='testuser', password='testpass123')
+
+    def test_create_game_view(self):
+        response = self.client.post(reverse('create_game'), {
+            'name': 'New Game',
+            'description': 'Game description'
+        })
+        self.assertRedirects(response, reverse('calendar', args=[self.user.id]))
+
+        # Confirm the game was created
+        game_exists = Game.objects.filter(name='New Game').exists()
+        self.assertTrue(game_exists)
