@@ -29,6 +29,7 @@ class Game(models.Model):
     developer = models.CharField(max_length=100, blank=True, null=True)
     release_date = models.DateField(blank=True, null=True)
     color = models.CharField(max_length=7, choices=COLOR_CHOICES, default='#FFFFFF')  # Set default color
+    picture_link = models.CharField(max_length=1000, blank=True, null=True)
 
     def __str__(self):
         return self.name
