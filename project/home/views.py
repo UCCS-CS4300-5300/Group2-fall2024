@@ -197,7 +197,8 @@ def CustomLogoutView(self, request):
 
 @login_required(login_url = 'login')
 def todo_list(request):
-    events = Event.objects.filter(user=request.user, start_time__date=timezone.now().date()).order_by('game__name', '-priority')
+    current_date = timezone.localtime(timezone.now()).date()
+    events = Event.objects.filter(user=request.user, start_time__date=current_date).order_by('game__name', '-priority')
 
     # Organize events by game
     games_with_events = {}
