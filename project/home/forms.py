@@ -52,6 +52,8 @@ class EventForm(ModelForm):
         widgets = {
             'start_time': DateInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
             'end_time': DateInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'recurrence': forms.Select(),
+            'recurrence_end': DateInput(attrs={'type': 'date'}),
         }
         fields = '__all__'
         exclude = ['user']
