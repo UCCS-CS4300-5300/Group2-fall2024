@@ -34,7 +34,7 @@ class Game(models.Model):
     def __str__(self):
         return self.name
 
-################## Event model ################################### 
+# Event model 
 class Event(models.Model):
     PRIORITY_CHOICES = [
         (1, 'Low'),
@@ -58,7 +58,6 @@ class Event(models.Model):
     recurrence = models.CharField(max_length=20, choices=RECURRING_CHOICES, default='none')
     recurrence_end = models.DateField(blank=True, null=True)  # End date for the recurrence
 
-
     class Meta:
         permissions = [("saved_events", "can save events")]
     priority = models.IntegerField(choices=PRIORITY_CHOICES, default=2)
@@ -71,8 +70,12 @@ class Event(models.Model):
         # Override default url settings, make font black for readability
         return f'<a href="{url}" style="color: #000;">{self.title}</a>'
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Grant 'view_event' permission to the assigned user
+        assign_perm('view_event', self.user, self)
+
     def __str__(self):
         return self.title
-
 
 User = get_user_model()

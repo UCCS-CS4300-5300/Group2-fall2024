@@ -46,7 +46,7 @@ class CalendarView(generic.ListView):
         cal = Calendar(d.year, d.month)
 
         # Call the formatmonth method, which returns our calendar as a table
-        html_cal = cal.formatmonth(user_id=user_id, withyear=True)
+        html_cal = cal.formatmonth(user_id=user_id, withyear=True) 
         context['calendar'] = mark_safe(html_cal)
         # Get adjacent months
         context['prev_month'] = prev_month(d)

@@ -1,6 +1,12 @@
+# home/utils.py 
+
 from datetime import datetime, timedelta
-from calendar import HTMLCalendar, monthrange
+from calendar import HTMLCalendar
 from .models import Event
+from guardian.shortcuts import get_objects_for_user
+from .templatetags.template_tags import *
+from django.urls import reverse
+from calendar import HTMLCalendar, monthrange
 from django.contrib.auth.models import User
 
 class Calendar(HTMLCalendar):
