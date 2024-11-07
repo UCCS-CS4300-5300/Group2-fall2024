@@ -4,6 +4,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# redis dumps
+dump.rdb
+
 # Adds pycache to gitignore
 project/_pycache_
 home/__pycache__/

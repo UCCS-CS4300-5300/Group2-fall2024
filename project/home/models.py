@@ -2,6 +2,7 @@ from django.db import models
 from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from guardian.shortcuts import assign_perm
 
 # Create your models here.
 
@@ -28,6 +29,7 @@ class Game(models.Model):
     developer = models.CharField(max_length=100, blank=True, null=True)
     release_date = models.DateField(blank=True, null=True)
     color = models.CharField(max_length=7, choices=COLOR_CHOICES, default='#FFFFFF')  # Set default color
+    picture_link = models.CharField(max_length=1000, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -58,6 +60,9 @@ class Event(models.Model):
         # Override default url settings, make font black for readability
         return f'<a href="{url}" style="color: #000;">{self.title}</a>'
 
-
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Grant 'view_event' permission to the assigned user
+        assign_perm('view_event', self.user, self)
 
 User = get_user_model()

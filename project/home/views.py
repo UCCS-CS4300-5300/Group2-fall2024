@@ -15,6 +15,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 
+from guardian.decorators import permission_required_or_403
+from django.core.exceptions import PermissionDenied
+from django.utils import timezone
+ 
 
 
 
@@ -75,9 +79,13 @@ def next_month(d):
 
 
 def event(request, event_id=None):
-    instance = Event()
+
     if event_id:
         instance = get_object_or_404(Event, pk=event_id)
+        if not request.user.has_perm('view_event', instance):
+            messages.error(request, "You do not have permission to edit this event.")
+            return HttpResponse(status=204)
+            
     else:
         instance = Event()
     
@@ -93,7 +101,29 @@ def event(request, event_id=None):
 # Function to return the detailed view of a specific event
 def event_detail(request, event_id):
     event = get_object_or_404(Event, pk=event_id)
-    return render(request, 'event_detail.html', {'event': event})
+    if request.user.has_perm('view_event', event):
+        return render(request, 'event_detail.html', {'event': event})
+    else:
+        return HttpResponse(status=204)
+
+@login_required(login_url = 'login')
+#method to delete a event for a user
+def deleteEvent(request, user_id, id):
+
+    #sets the event based on the id from the url
+    event = get_object_or_404(Event, pk=id)
+
+    #check the method is as expected
+    if request.method == 'POST':
+        #delete the event using funtion delete()
+        event.delete()
+        # Redirect back to the Calend list page
+        return redirect('calendar', user_id)
+
+    #pass in the event into the dictionary 
+    context = {'event': event}
+    #go to delete template with this information
+    return render(request, 'delete.html', context)
 
 # Function to create a new game
 def create_game(request):
@@ -192,3 +222,27 @@ def update_password(request):
 def CustomLogoutView(self, request):
         logout(request)  # Log the user out
         return redirect("index")  # Redirect to the home page or your desired URL
+
+@login_required(login_url = 'login')
+def todo_list(request):
+    current_date = timezone.localtime(timezone.now()).date()
+    events = Event.objects.filter(user=request.user, start_time__date=current_date).order_by('game__name', '-priority')
+
+    # Organize events by game
+    games_with_events = {}
+
+    for event in events:
+        game = event.game  # This gives you the actual Game instance
+        game_name = game.name if game else "No Game"
+        if game_name not in games_with_events:
+            games_with_events[game_name] = {
+                'game': game,  # Pass the actual Game object here
+                'events': []   # Create a list for events
+            }
+        games_with_events[game_name]['events'].append(event)
+    
+    context = {
+        'games_with_events': games_with_events
+    }
+
+    return render(request, 'todo_list.html', context)
