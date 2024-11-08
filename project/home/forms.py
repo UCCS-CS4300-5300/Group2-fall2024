@@ -69,8 +69,14 @@ class GameForm(forms.ModelForm):
         model = Game
         fields = '__all__'
         widgets = {
-            'release_date': forms.DateInput(attrs={'type': 'date'}),
+            'release_date': forms.DateInput(attrs={'type': 'date', 'placeholder': 'Optional'}),
+            'genre': forms.TextInput(attrs={'placeholder': 'Optional'}),
+            'platform': forms.Select(attrs={'placeholder': 'Optional'}),
+            'developer': forms.TextInput(attrs={'placeholder': 'Optional'}),
+            'color': forms.Select(attrs={'placeholder': 'Optional'}),
+            'picture_link': forms.TextInput(attrs={'placeholder': 'Optional'}),
         }
+        
 class UsersForm(ModelForm):
     class Meta:
         model = User

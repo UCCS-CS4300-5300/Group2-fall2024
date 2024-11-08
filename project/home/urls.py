@@ -25,6 +25,8 @@ urlpatterns = [
     path('event/<int:event_id>/', views.event_detail, name='event_detail'),
     # URl path for the create game view
     path('calendar/create_game/', views.create_game, name='create_game'),
+    # URL for editing an existing game
+    path('game/edit/<int:game_id>/', views.create_game, name='edit_game'), 
     #url for event deletion that takes in user id and recipe id
     path('event_delete/<int:user_id>/<int:id>', views.deleteEvent, name='delete_event'),
     path('todo-list/', views.todo_list, name='todo_list'),

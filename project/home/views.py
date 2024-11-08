@@ -24,7 +24,9 @@ from django.utils import timezone
 # Create your views here.
 
 def index(request):
-    return render(request, 'index.html')
+    # Gather games currently associated to user's events to display "currently playing" on the home page. 
+    currently_playing_games = Game.objects.filter(events__user=request.user).distinct() if request.user.is_authenticated else None
+    return render(request, 'index.html', {'currently_playing_games': currently_playing_games})
 
 class CalendarView(generic.ListView):
     model = Event
@@ -185,15 +187,19 @@ def deleteEvent(request, user_id, id):
     #go to delete template with this information
     return render(request, 'delete.html', context)
 
-# Function to create a new game
-def create_game(request):
+# Function to create a new game or edit exisiting
+def create_game(request, game_id=None):
+
+    # Retrieve the game instance if editing, or create a new one if game_id is None
+    game = get_object_or_404(Game, id=game_id) if game_id else None
+
     if request.method == 'POST':
-        form = GameForm(request.POST)
+        form = GameForm(request.POST, instance=game)
         if form.is_valid():
             form.save()
             return redirect(reverse('calendar', args=[request.user.id]))  # Redirect to a list of games or wherever
     else:
-        form = GameForm()
+        form = GameForm(instance=game)
 
     return render(request, 'create_game.html', {'form': form})
   

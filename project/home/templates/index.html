@@ -1,60 +1,43 @@
-
 {% extends "base_template.html" %}
+{% load static %} 
 
 {% block title %}Homepage{% endblock %}
 
 {% block content %}
-
-{% load static %}
-
-
-
-
-    <header class="header">
-        <!-- Game Plan Calendar logo -->
-        
+    <header class="header text-center">
         <h1>Welcome to GamePlan!</h1>
         <p class="lead">The ultimate planner for gamers.</p>
     </header>
 
-    {% if messages %}
-    <div class="container justify-content-center">
-        <div class="alert alert-info text-center">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
+    <!-- Currently Playing Games Section -->
+    {% if user.is_authenticated %}
+        <div class="todo-list-page text-center mt-5">
+            <h2>Games You Are Currently Playing</h2>
+            
+            {% if currently_playing_games %}
+                <div class="main-content">
+                    {% for game in currently_playing_games %}
+                    <div class="game-section">
+                        <!-- Link to edit game -->
+                        <a href="{% url 'edit_game' game.id %}" class="game-section-link">
+                            <!-- Display Game Image or Default Image -->
+                            {% if game.picture_link %}
+                                <img src="{{ game.picture_link }}" alt="Image for {{ game.name }}" class="game-image">
+                            {% else %}
+                                <img src="{% static 'images/game-icon.jpg' %}" alt="Default game image" class="game-image">
+                            {% endif %}
+                            <h2>{{ game.name }}</h2>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">You're not currently playing any games.</p>
+            {% endif %}
         </div>
-    </div>
+    {% else %}
+        <div class="text-center mt-5">
+            <p>Please <a href="{% url 'login' %}?next={{ request.path }}">log in</a> to view your game calendar.</p>
+        </div>
     {% endif %}
-
-        <div id="home" class="tab-pane active">
-            <main class="main-content">
-
-                <img src="{% static 'images/game-icon.jpg' %}" class="img" alt="Game Icon Image">
-                <p>This is a beautiful landing page designed to engage users.</p>
-                {% if user.is_anonymous %}
-                <a href="{% url 'login' %}?next={{ request.path }}" class="btn">Get Started</a>
-                {%endif%}
-            </main>
-        </div>
-        <div id="events" class="tab-pane">
-            <div class="main-content">
-                <h2>Upcoming Events</h2>
-                <p>List of gaming events coming up!</p>
-            </div>
-        </div>
-        <div id="calendar" class="tab-pane">
-            <div class="main-content">
-                <h2>Your Calendar</h2>
-                <p>Here’s your gaming calendar!</p>
-            </div>
-        </div>
-        <div id="settings" class="tab-pane">
-            <div class="main-content">
-                <h2>Settings</h2>
-                <p>Customize your experience!</p>
-            </div>
-        </div>
-
-
 {% endblock %}
