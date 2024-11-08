@@ -9,7 +9,6 @@
         <p class="lead">The ultimate planner for gamers.</p>
     </header>
 
-
     <!-- Currently Playing Games Section -->
     {% if user.is_authenticated %}
         <div class="todo-list-page text-center mt-5">
@@ -18,17 +17,18 @@
             {% if currently_playing_games %}
                 <div class="main-content">
                     {% for game in currently_playing_games %}
-                    <a href="{% url 'edit_game' game.id %}" class="game-section-link">
-                        <div class="game-section">
-                            <!-- Check if game has an image, otherwise use the default -->
+                    <div class="game-section">
+                        <!-- Link to edit game -->
+                        <a href="{% url 'edit_game' game.id %}" class="game-section-link">
+                            <!-- Display Game Image or Default Image -->
                             {% if game.picture_link %}
-                            <img src="{{ game.picture_link }}" class="game-image">
+                                <img src="{{ game.picture_link }}" alt="Image for {{ game.name }}" class="game-image">
                             {% else %}
-                            <img src="{% static 'images/game-icon.jpg' %}" class="game-image">
+                                <img src="{% static 'images/game-icon.jpg' %}" alt="Default game image" class="game-image">
                             {% endif %}
                             <h2>{{ game.name }}</h2>
-                        </div>
-                    </a>
+                        </a>
+                    </div>
                     {% endfor %}
                 </div>
             {% else %}
