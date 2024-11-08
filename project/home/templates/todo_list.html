@@ -5,12 +5,11 @@
 {% load static %}
 
 {% block content %}
-<header class="header">
-    <!-- Game Plan Calendar logo or other content -->
-    <h1>To-Do List of Upcoming Events</h1>
-</header>
+<div class="todo-list-page">
+    <header class="header">
+        <h1>To-Do List of Upcoming Events</h1>
+    </header>
 
-<div class="todo-list-page"> <!-- Specific class for this page -->
     {% if games_with_events %}
         <div class="main-content">
             {% for game_name, game_data in games_with_events.items %}

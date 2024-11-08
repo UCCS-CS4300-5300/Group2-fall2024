@@ -15,6 +15,7 @@ from django.contrib.auth.decorators import login_required
 from guardian.decorators import permission_required_or_403
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
+from collections import OrderedDict
  
 
 
@@ -198,9 +199,9 @@ def CustomLogoutView(self, request):
 @login_required(login_url='login')
 def todo_list(request):
     current_date = timezone.localtime(timezone.now()).date()
-    events = Event.objects.filter(user=request.user, start_time__date=current_date).order_by('game__name', '-priority')
+    events = Event.objects.filter(user=request.user, start_time__date=current_date).order_by('game__name', 'start_time', '-priority')
 
-    # Organize events by game and track the highest priority within each game
+    # Organize events by game and track the earliest start time and highest priority for sorting
     games_with_events = {}
 
     for event in events:
@@ -209,21 +210,29 @@ def todo_list(request):
         
         if game_name not in games_with_events:
             games_with_events[game_name] = {
-                'game': game,  # Store the actual Game object
-                'events': [],  # Create a list to hold events for this game
-                'highest_priority': event.priority  # Track the highest priority in this game
+                'game': game,          # Store the actual Game object
+                'events': [],          # List to hold events for this game
+                'earliest_start': event.start_time,  # Track the earliest start time in this game
+                'highest_priority': event.priority   # Track the highest priority in this game
             }
         
         # Add the event to the list of events for this game
         games_with_events[game_name]['events'].append(event)
         
+        # Update the earliest start time for the game if this event is earlier
+        if event.start_time < games_with_events[game_name]['earliest_start']:
+            games_with_events[game_name]['earliest_start'] = event.start_time
+        
         # Update the highest priority for the game if this event has a higher priority
         if event.priority > games_with_events[game_name]['highest_priority']:
             games_with_events[game_name]['highest_priority'] = event.priority
 
-    # Sort games by their highest priority, with higher-priority games appearing first
-    sorted_games_with_events = dict(
-        sorted(games_with_events.items(), key=lambda x: x[1]['highest_priority'], reverse=True)
+    # Sort games by earliest start time (primary) and highest priority (secondary), with higher priority first
+    sorted_games_with_events = OrderedDict(
+        sorted(
+            games_with_events.items(),
+            key=lambda x: (x[1]['earliest_start'], -x[1]['highest_priority'])
+        )
     )
 
     context = {
