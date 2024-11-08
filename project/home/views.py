@@ -12,6 +12,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, forms
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from guardian.decorators import permission_required_or_403
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
@@ -46,7 +48,7 @@ class CalendarView(generic.ListView):
         cal = Calendar(d.year, d.month)
 
         # Call the formatmonth method, which returns our calendar as a table
-        html_cal = cal.formatmonth(user_id=user_id, withyear=True)
+        html_cal = cal.formatmonth(user_id=user_id, withyear=True) 
         context['calendar'] = mark_safe(html_cal)
         # Get adjacent months
         context['prev_month'] = prev_month(d)
@@ -78,24 +80,85 @@ def next_month(d):
 
 
 def event(request, event_id=None):
-
+    instance = Event()
     if event_id:
         instance = get_object_or_404(Event, pk=event_id)
-        if not request.user.has_perm('view_event', instance):
-            messages.error(request, "You do not have permission to edit this event.")
-            return HttpResponse(status=204)
-            
-    else:
-        instance = Event()
-    
+
     form = EventForm(request.POST or None, instance=instance)
-    if request.POST and form.is_valid():
+    if request.method == 'POST' and form.is_valid():
         event = form.save(commit=False)
         event.user = request.user  # Assign the current user
         event.save()
 
-        return HttpResponseRedirect(reverse('calendar',  args=[request.user.id]))
-    return render(request, 'event.html', {'form': form})
+        # Handle recurrence for a single event
+        recurrence_type = event.recurrence
+        if recurrence_type != 'none':
+            current_start = event.start_time
+            current_end = event.end_time
+            recurrence_end = form.cleaned_data.get('recurrence_end')
+
+            # Ensure current_start and current_end are timezone-aware
+            current_start = timezone.make_aware(current_start) if timezone.is_naive(current_start) else current_start
+            current_end = timezone.make_aware(current_end) if timezone.is_naive(current_end) else current_end
+
+            # Ensure recurrence_end is a datetime and timezone-aware for comparison
+            if recurrence_end:
+                if isinstance(recurrence_end, date) and not isinstance(recurrence_end, datetime):
+                    recurrence_end = timezone.make_aware(datetime.combine(recurrence_end, datetime.min.time()))
+                if timezone.is_naive(recurrence_end):
+                    recurrence_end = timezone.make_aware(recurrence_end)
+
+            # Loop to create recurring events
+            while True:
+                # Check if we should create a new event
+                overlap_exists = Event.objects.filter(
+                    user=event.user,
+                    start_time__lt=current_end,
+                    end_time__gt=current_start,
+                ).exists()
+
+                if not overlap_exists:
+                    # Create a new event for the recurrence
+                    new_event = Event(
+                        user=event.user,
+                        title=event.title,
+                        description=event.description,
+                        start_time=current_start,
+                        end_time=current_end,
+                        recurrence='none'  # Set recurrence to none for created events
+                    )
+                    new_event.save()
+
+                # Update start and end times based on recurrence type
+                if recurrence_type == 'daily':
+                    current_start += timedelta(days=1)
+                    current_end += timedelta(days=1)
+                elif recurrence_type == 'weekly':
+                    current_start += timedelta(weeks=1)
+                    current_end += timedelta(weeks=1)
+                elif recurrence_type == 'monthly':
+                    # Move to the next month and ensure valid day
+                    next_month = (current_start.month % 12) + 1
+                    next_year = current_start.year + (current_start.month // 12)
+
+                    # Get the last day of the next month
+                    last_day_next_month = get_last_day_of_month(next_year, next_month)
+
+                    # Adjust the current day if it exceeds the last day of the next month
+                    current_day = current_start.day
+                    if current_day > last_day_next_month:
+                        current_day = last_day_next_month
+                    
+                    current_start = current_start.replace(year=next_year, month=next_month, day=current_day)
+                    current_end = current_end.replace(year=next_year, month=next_month, day=current_day)
+
+                # Stop if we reach the end of recurrence
+                if recurrence_end and current_start > recurrence_end:
+                    break
+
+        return redirect('calendar', user_id=request.user.id)
+
+    return render(request, 'event.html', {'form': form, 'event_id': event_id})
 
 # Function to return the detailed view of a specific event
 def event_detail(request, event_id):
@@ -164,9 +227,9 @@ def userPage(request):
     
     user = User.objects.get(id=user_id)
     form = UsersForm(instance = user)
-    
+    password_form = PasswordChangeForm(request.user)
 
-    if request.method == 'POST':
+    if request.method == 'POST' and 'password_form' not in request.POST:
         form = UsersForm(request.POST, request.FILES, instance = user)
         if form.is_valid():
             
@@ -194,6 +257,31 @@ def Login(request):
             messages.info(request, f'account done not exit plz sign in')
     form = AuthenticationForm()
     return render(request, 'login.html', {'form':form, 'title':'log in'})
+
+
+################ Update Password################################################### 
+@login_required
+def update_account(request):
+    user_form = UsersForm(instance=request.user)
+    if request.method == 'POST':
+        user_form = UsersForm(request.POST, instance=request.user)
+        if user_form.is_valid():
+            user_form.save()
+            messages.success(request, 'Your account has been updated successfully!.')
+            return redirect('user_page')
+    return render(request, 'update_account.html', {'user_form': user_form})
+
+@login_required
+def update_password(request):
+    password_form = CustomPasswordChangeForm(user=request.user)
+    if request.method == 'POST':
+        password_form = CustomPasswordChangeForm(request.user, request.POST)
+        if password_form.is_valid():
+            user = password_form.save()
+            update_session_auth_hash(request, user)  # Prevents logout after password change
+            messages.success(request, 'Your password has been updated successfully!')
+            return redirect('user_page')
+    return render(request, 'update_password.html', {'password_form': password_form})
 
 ################ logout ################################################### 
 

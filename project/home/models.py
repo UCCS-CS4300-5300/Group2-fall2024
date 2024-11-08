@@ -4,8 +4,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from guardian.shortcuts import assign_perm
 
-User = get_user_model()
-
 # Create your models here.
 
 # Game model
@@ -49,6 +47,16 @@ class Event(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, default = None)
+    ############### This is where recurring choices being implemented #################
+    RECURRING_CHOICES = [
+        ('none', 'None'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+    ]
+    
+    recurrence = models.CharField(max_length=20, choices=RECURRING_CHOICES, default='none')
+    recurrence_end = models.DateField(blank=True, null=True)  # End date for the recurrence
 
     class Meta:
         permissions = [("saved_events", "can save events")]
@@ -67,4 +75,7 @@ class Event(models.Model):
         # Grant 'view_event' permission to the assigned user
         assign_perm('view_event', self.user, self)
 
+    def __str__(self):
+        return self.title
 
+User = get_user_model()
