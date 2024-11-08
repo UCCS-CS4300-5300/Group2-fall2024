@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from guardian.shortcuts import assign_perm
 
+User = get_user_model()
+
 # Create your models here.
 
 # Game model
@@ -65,4 +67,4 @@ class Event(models.Model):
         # Grant 'view_event' permission to the assigned user
         assign_perm('view_event', self.user, self)
 
-User = get_user_model()
+
