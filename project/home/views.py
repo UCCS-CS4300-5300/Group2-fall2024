@@ -195,26 +195,39 @@ def CustomLogoutView(self, request):
         logout(request)  # Log the user out
         return redirect("index")  # Redirect to the home page or your desired URL
 
-@login_required(login_url = 'login')
+@login_required(login_url='login')
 def todo_list(request):
     current_date = timezone.localtime(timezone.now()).date()
     events = Event.objects.filter(user=request.user, start_time__date=current_date).order_by('game__name', '-priority')
 
-    # Organize events by game
+    # Organize events by game and track the highest priority within each game
     games_with_events = {}
 
     for event in events:
-        game = event.game  # This gives you the actual Game instance
+        game = event.game  # Get the Game instance associated with the event
         game_name = game.name if game else "No Game"
+        
         if game_name not in games_with_events:
             games_with_events[game_name] = {
-                'game': game,  # Pass the actual Game object here
-                'events': []   # Create a list for events
+                'game': game,  # Store the actual Game object
+                'events': [],  # Create a list to hold events for this game
+                'highest_priority': event.priority  # Track the highest priority in this game
             }
+        
+        # Add the event to the list of events for this game
         games_with_events[game_name]['events'].append(event)
-    
+        
+        # Update the highest priority for the game if this event has a higher priority
+        if event.priority > games_with_events[game_name]['highest_priority']:
+            games_with_events[game_name]['highest_priority'] = event.priority
+
+    # Sort games by their highest priority, with higher-priority games appearing first
+    sorted_games_with_events = dict(
+        sorted(games_with_events.items(), key=lambda x: x[1]['highest_priority'], reverse=True)
+    )
+
     context = {
-        'games_with_events': games_with_events
+        'games_with_events': sorted_games_with_events
     }
 
     return render(request, 'todo_list.html', context)
