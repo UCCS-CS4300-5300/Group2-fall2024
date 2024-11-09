@@ -223,7 +223,7 @@ def create_game(request, game_id=None):
     game = get_object_or_404(Game, id=game_id) if game_id else None
 
     if request.method == 'POST':
-        form = GameForm(request.POST, instance=game)
+        form = GameForm(request.POST, request.FILES, instance=game)
         if form.is_valid():
             form.save()
             return redirect(reverse('calendar', args=[request.user.id]))  # Redirect to a list of games or wherever

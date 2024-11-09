@@ -32,7 +32,7 @@ class Game(models.Model):
     picture_link = models.CharField(max_length=1000, blank=True, null=True)
     
     #adding in this so peopel can upload pictures
-    picture_upload = models.ImageField(upload_to='images/', blank=True, null=True)
+    picture_upload = models.ImageField(blank=True, null=True)
 
     def __str__(self):
         return self.name

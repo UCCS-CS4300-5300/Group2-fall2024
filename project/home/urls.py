@@ -9,6 +9,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 
+
 urlpatterns = [
     path('', index, name='index'),
     # include home path on url to match our navbar route
@@ -37,3 +38,8 @@ urlpatterns = [
     path('event_delete/<int:user_id>/<int:id>', views.deleteEvent, name='delete_event'),
     path('todo-list/', views.todo_list, name='todo_list'),
 ]
+
+#stuff for image upload
+if settings.DEBUG:
+       urlpatterns += static(settings.MEDIA_URL,
+                            document_root=settings.MEDIA_ROOT)

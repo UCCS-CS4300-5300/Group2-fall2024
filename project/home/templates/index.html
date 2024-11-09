@@ -20,9 +20,12 @@
                     <div class="game-section">
                         <!-- Link to edit game -->
                         <a href="{% url 'edit_game' game.id %}" class="game-section-link">
+                            <!-- uploaded image check or default-->
+                            {% if game.picture_upload %}
+                                <img src="{{ game.picture_upload.url }}" class="img-responsive" style="width: 100%; float: left; margin-right: 10px;" />
                             <!-- Display Game Image or Default Image -->
-                            {% if game.picture_link %}
-                                <img src="{{ game.picture_link }}" alt="Image for {{ game.name }}" class="game-image">
+                            {% elif game.picture_link %}
+                            <img src="{{ game.picture_link }}" alt="Image for {{ game.name }}" class="game-image">
                             {% else %}
                                 <img src="{% static 'images/game-icon.jpg' %}" alt="Default game image" class="game-image">
                             {% endif %}
