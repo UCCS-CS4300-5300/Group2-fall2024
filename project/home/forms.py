@@ -6,6 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError  
 from django.forms.fields import EmailField  
 from django.forms.forms import Form  
+from ajax_select.fields import AutoCompleteSelectField
 
 
 class CustomUserCreationForm(UserCreationForm):  
@@ -72,3 +73,6 @@ class UsersForm(ModelForm):
     class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'email',)
+
+class FriendSearchForm(forms.Form):
+    username = AutoCompleteSelectField('user-lookup', required=False)

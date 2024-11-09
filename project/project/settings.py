@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'home',
     'bootstrap5',
     'guardian',
+    
 ]
 
 # Add support for authenticating users
@@ -148,7 +149,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 #add reference path to static
 STATICFILES_DIRS = [
-os.path.join(BASE_DIR, 'home/static')
+os.path.join(BASE_DIR, 'home/static'),
 ]
 
 # Default primary key field type
@@ -160,3 +161,4 @@ LOGIN_REDIRECT_URL = '/'  # Adjusts prebuilt login path to redirect user to inde
 
 
 LOGOUT_REDIRECT_URL = '/'  # Adjusts prebuilt logout path to redirect user to index page after login
+

@@ -2,6 +2,7 @@ from django.db import models
 from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from django.db.models import Q
 from guardian.shortcuts import assign_perm
 
 # Create your models here.
@@ -65,3 +66,22 @@ class Event(models.Model):
         assign_perm('view_event', self.user, self)
 
 User = get_user_model()
+
+class FriendRequest(models.Model):
+    from_user = models.ForeignKey(User, related_name='sent_requests', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name='received_requests', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    accepted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.from_user.username} to {self.to_user.username}'
+
+    @property
+    def friends(self):
+        # Get users who have accepted friend requests in either direction
+        friends = User.objects.filter(
+            Q(id__in=FriendRequest.objects.filter(from_user=self.from_user, accepted=True).values_list('to_user', flat=True)) |
+            Q(id__in=FriendRequest.objects.filter(to_user=self.from_user, accepted=True).values_list('from_user', flat=True))
+        ).exclude(id=self.from_user.id)  # Exclude the current user
+
+        return friends

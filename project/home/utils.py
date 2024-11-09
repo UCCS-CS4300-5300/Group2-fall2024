@@ -5,9 +5,13 @@
 from datetime import datetime, timedelta
 from calendar import HTMLCalendar
 from .models import Event
-from guardian.shortcuts import get_objects_for_user
+
 from .templatetags.template_tags import *
 from django.urls import reverse
+
+from django.core import signing
+from django.conf import settings
+from django.utils import timezone
 
 class Calendar(HTMLCalendar):
 	def __init__(self, year=None, month=None):
@@ -45,10 +49,7 @@ class Calendar(HTMLCalendar):
 	def formatmonth(self, withyear=True, user_id=None):
 		
 		user = User.objects.get(id = user_id)
-		"""
-		events = get_objects_for_user(user,
-		"home.saved_events", klass = Event)
-		"""
+		
 		events = Event.objects.filter(user = user_id)
 		events = Event.objects.filter(user = user_id, start_time__year=self.year, start_time__month=self.month)
 
@@ -59,3 +60,16 @@ class Calendar(HTMLCalendar):
 			cal += f'{self.formatweek(week, events)}\n'
 		cal += f'</table>\n'
 		return cal
+
+def generate_user_token(user_id):
+    # Sign the user_id to generate a secure token
+    return signing.dumps({'user_id': user_id})
+
+def validate_user_token(token):
+    try:
+        # Unsign the token to retrieve the user_id
+        data = signing.loads(token)
+        return data.get('user_id')
+    except signing.BadSignature:
+        # Return None or raise an error if the token is invalid or expired
+        return None

@@ -97,6 +97,11 @@ img {
     border-radius: 5px;
     margin-top: 0 px;
 }
+.btn[disabled] {
+    background-color: #ccc;  /* Light grey color for disabled buttons */
+    cursor: not-allowed;     /* Change cursor to indicate it's disabled */
+    color: #666;             /* Slightly darker text for disabled look */
+}
 
 .btn:hover {
     background-color: #28692b !important; /* Darker green on hover */
