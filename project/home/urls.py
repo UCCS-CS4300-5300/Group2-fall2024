@@ -14,7 +14,8 @@ urlpatterns = [
     path('accounts/logout/', CustomLogoutView, name='logout'),  # Use your custom logout view
     path('accounts/register/', register, name = "register"),
     path('accounts/profile/', views.userPage, name = "user_page"),
-
+    path('accounts/update_password/', views.update_password, name = "update_password"),
+    path('accounts/update_account/', views.update_account, name = "update_account"),
     
     path('calendar/<int:user_id>', CalendarView.as_view(), name = 'calendar' ),
     re_path(r'^event/new/$', views.event, name='event_new'),
@@ -24,6 +25,8 @@ urlpatterns = [
     path('event/<int:event_id>/', views.event_detail, name='event_detail'),
     # URl path for the create game view
     path('calendar/create_game/', views.create_game, name='create_game'),
+    # URL for editing an existing game
+    path('game/edit/<int:game_id>/', views.create_game, name='edit_game'), 
     #url for event deletion that takes in user id and recipe id
     path('event_delete/<int:user_id>/<int:id>', views.deleteEvent, name='delete_event'),
     path('todo-list/', views.todo_list, name='todo_list'),
