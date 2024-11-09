@@ -114,3 +114,19 @@ class Calendar(HTMLCalendar):
         cal += f'</table>\n'
         return cal
 
+#shows only 1 week without messing up the rest of the month
+class CalendarWeek(Calendar):
+    def formatmonth(self, withyear=True, user_id=None):
+        user = User.objects.get(id=user_id)
+
+        # Fetch all events for the user as a QuerySet
+        events = Event.objects.filter(user=user_id, start_time__month=self.month, start_time__year=self.year)
+
+        cal = f'<table border="0" cellpadding="0" cellspacing="0" class="calendar">\n'
+        cal += f'{self.formatmonthname(self.year, self.month, withyear=withyear)}\n'
+        cal += f'{self.formatweekheader()}\n'
+        for week in self.monthdays2calendar(self.year, self.month):
+            cal += f'{self.formatweek(week, events)}\n'
+            break
+        cal += f'</table>\n'
+        return cal

@@ -18,6 +18,7 @@ urlpatterns = [
     path('accounts/update_account/', views.update_account, name = "update_account"),
     
     path('calendar/<int:user_id>', CalendarView.as_view(), name = 'calendar' ),
+    path('calendarweek/<int:user_id>', CalendarViewWeek.as_view(), name = 'calendarweek' ),
     re_path(r'^event/new/$', views.event, name='event_new'),
     re_path(r'^event/edit/(?P<event_id>\d+)/$', views.event, name='event_edit'),
     

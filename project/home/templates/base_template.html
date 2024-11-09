@@ -44,7 +44,7 @@
                             </a>
                             <div class="dropdown-menu" aria-labelledby="viewToggleDropdown">
                                 <a class="dropdown-item" href="{% url 'calendar' user.id %}">Monthly</a>
-                                <a class="dropdown-item" href="#">Weekly</a>
+                                <a class="dropdown-item" href="{% url 'calendarweek' user.id %}">Weekly</a>
                             </div>
                         </li>
                             <li class="nav-item"><a class="nav-link" href="{% url 'todo_list' %}">To-Do List</a></li>
