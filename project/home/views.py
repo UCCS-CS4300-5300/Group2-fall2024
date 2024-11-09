@@ -17,6 +17,8 @@ from django.contrib.auth import update_session_auth_hash
 from guardian.decorators import permission_required_or_403
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
+from collections import OrderedDict
+from django.db.models import Q
  
 
 
@@ -44,17 +46,25 @@ class CalendarView(generic.ListView):
         # Get user-specific information about theme
         current_theme = self.request.COOKIES.get('theme', 'light')  # Default to 'light'
 
-        # Instantiate our calendar class with today's year and date
+        # Instantiate our calendar class with the specified year and month
         cal = Calendar(d.year, d.month)
 
-        # Call the formatmonth method, which returns our calendar as a table
-        html_cal = cal.formatmonth(user_id=user_id, withyear=True) 
+        # Query for events relevant to the selected month, including recurring events from past months
+        events = Event.objects.filter(
+            Q(user_id=user_id),
+            Q(start_time__year=d.year, start_time__month=d.month) |
+            Q(recurrence__in=['daily', 'weekly', 'monthly'], start_time__date__lte=d)
+        )
+
+        # Generate the calendar HTML with events
+        html_cal = cal.formatmonth(events=events, withyear=True)
         context['calendar'] = mark_safe(html_cal)
-        # Get adjacent months
+
+        # Get adjacent months for navigation
         context['prev_month'] = prev_month(d)
         context['next_month'] = next_month(d)
 
-        #add theme
+        # Add theme
         context['current_theme'] = current_theme
 
         return context
@@ -318,26 +328,47 @@ def CustomLogoutView(self, request):
         logout(request)  # Log the user out
         return redirect("index")  # Redirect to the home page or your desired URL
 
-@login_required(login_url = 'login')
+@login_required(login_url='login')
 def todo_list(request):
     current_date = timezone.localtime(timezone.now()).date()
-    events = Event.objects.filter(user=request.user, start_time__date=current_date).order_by('game__name', '-priority')
+    events = Event.objects.filter(user=request.user, start_time__date=current_date).order_by('game__name', 'start_time', '-priority')
 
-    # Organize events by game
+    # Organize events by game and track the earliest start time and highest priority for sorting
     games_with_events = {}
 
     for event in events:
-        game = event.game  # This gives you the actual Game instance
+        game = event.game  # Get the Game instance associated with the event
         game_name = game.name if game else "No Game"
+        
         if game_name not in games_with_events:
             games_with_events[game_name] = {
-                'game': game,  # Pass the actual Game object here
-                'events': []   # Create a list for events
+                'game': game,          # Store the actual Game object
+                'events': [],          # List to hold events for this game
+                'earliest_start': event.start_time,  # Track the earliest start time in this game
+                'highest_priority': event.priority   # Track the highest priority in this game
             }
+        
+        # Add the event to the list of events for this game
         games_with_events[game_name]['events'].append(event)
-    
+        
+        # Update the earliest start time for the game if this event is earlier
+        if event.start_time < games_with_events[game_name]['earliest_start']:
+            games_with_events[game_name]['earliest_start'] = event.start_time
+        
+        # Update the highest priority for the game if this event has a higher priority
+        if event.priority > games_with_events[game_name]['highest_priority']:
+            games_with_events[game_name]['highest_priority'] = event.priority
+
+    # Sort games by earliest start time (primary) and highest priority (secondary), with higher priority first
+    sorted_games_with_events = OrderedDict(
+        sorted(
+            games_with_events.items(),
+            key=lambda x: (x[1]['earliest_start'], -x[1]['highest_priority'])
+        )
+    )
+
     context = {
-        'games_with_events': games_with_events
+        'games_with_events': sorted_games_with_events
     }
 
     return render(request, 'todo_list.html', context)

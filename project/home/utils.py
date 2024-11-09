@@ -41,57 +41,56 @@ class Calendar(HTMLCalendar):
         return '<td></td>'
 
     ##################### Recurring Events ############################
+   
     def get_recurring_events(self, events, day):
-        recurring_events = Event.objects.none()  # Start with an empty QuerySet
+        recurring_events_list = []  # Temporary list to hold recurring events for this day
 
         # Validate the day
         max_day = monthrange(self.year, self.month)[1]  # Get the max days in the month
         if day < 1 or day > max_day:  # Check if the day is valid
-            return recurring_events
-        
-        # Create the current date
-        current_date = datetime(self.year, self.month, day)
+            return Event.objects.none()
+
+        # Create the current date for the given day in the current calendar
+        current_date = datetime(self.year, self.month, day).date()
 
         for event in events:
             if event.recurrence != 'none':
                 start_date = event.start_time.date()
-                recurrence_end = event.recurrence_end or datetime.now().date()
+                recurrence_end = event.recurrence_end or current_date
 
-                # Check if the event is in the range
-                if start_date <= current_date.date() <= recurrence_end:
+                # Ensure the event's recurrence period includes the current date
+                if start_date <= current_date <= recurrence_end:
                     if event.recurrence == 'daily':
-                        # Daily events occur every day within the range
-                        recurring_events |= Event.objects.filter(
-                            start_time__date__gte=start_date,
-                            start_time__date__lte=recurrence_end
-                        ).filter(
-                            recurrence='daily',
-                            start_time__month=self.month,
-                            start_time__year=self.year
-                        )
-                    elif event.recurrence == 'weekly' and current_date.weekday() == event.start_time.weekday():
-                        # Weekly events should match the weekday
-                        recurring_events |= Event.objects.filter(
-                            start_time__date__gte=start_date,
-                            start_time__date__lte=recurrence_end
-                        ).filter(
-                            recurrence='weekly',
-                            start_time__month=self.month,
-                            start_time__year=self.year
-                        )
-                    elif event.recurrence == 'monthly' and current_date.day == event.start_time.day:
-                        # Monthly events should match the day of the month
-                        recurring_events |= Event.objects.filter(
-                            start_time__date__gte=start_date,
-                            start_time__date__lte=recurrence_end
-                        ).filter(
-                            recurrence='monthly',
-                            start_time__month=self.month,
-                            start_time__year=self.year
-                        )
+                        # Daily events appear every day within the range
+                        recurring_events_list.append(event)
+
+                    elif event.recurrence == 'weekly':
+                        # Explicitly calculate the recurrence dates for weekly events
+                        weekly_occurrence = start_date
+                        while weekly_occurrence <= recurrence_end:
+                            if weekly_occurrence == current_date:
+                                recurring_events_list.append(event)
+                                break
+                            weekly_occurrence += timedelta(weeks=1)
+
+                    elif event.recurrence == 'monthly':
+                        # Explicitly calculate the recurrence dates for monthly events
+                        monthly_occurrence = start_date
+                        while monthly_occurrence <= recurrence_end:
+                            if monthly_occurrence == current_date:
+                                recurring_events_list.append(event)
+                                break
+                            # Move to the next month while keeping the day the same
+                            if monthly_occurrence.month == 12:
+                                monthly_occurrence = monthly_occurrence.replace(year=monthly_occurrence.year + 1, month=1)
+                            else:
+                                monthly_occurrence = monthly_occurrence.replace(month=monthly_occurrence.month + 1)
+
+        # Convert list to QuerySet with `in_bulk` to ensure no duplicates
+        recurring_events_ids = [event.id for event in recurring_events_list]
+        recurring_events = Event.objects.filter(id__in=recurring_events_ids)
 
         return recurring_events
-
     # Formats a week as a tr 
     def formatweek(self, theweek, events):
         week = ''
@@ -100,19 +99,22 @@ class Calendar(HTMLCalendar):
         return f'<tr> {week} </tr>'
 
     # Formats a month as a table
-    def formatmonth(self, withyear=True, user_id=None):
-        user = User.objects.get(id=user_id)
+    def formatmonth(self, events, withyear=True):
+        # Start creating the HTML table for the month
+        self.events = events  # Store events to access within `formatday`
+        month_html = f'<table border="0" cellpadding="0" cellspacing="0" class="calendar">\n'
+        month_html += f'{self.formatmonthname(self.year, self.month, withyear=withyear)}\n'
+        month_html += f'{self.formatweekheader()}\n'
 
-        # Fetch all events for the user as a QuerySet
-        events = Event.objects.filter(user=user_id, start_time__month=self.month, start_time__year=self.year)
-
-        cal = f'<table border="0" cellpadding="0" cellspacing="0" class="calendar">\n'
-        cal += f'{self.formatmonthname(self.year, self.month, withyear=withyear)}\n'
-        cal += f'{self.formatweekheader()}\n'
+        # Iterate over weeks in the month
         for week in self.monthdays2calendar(self.year, self.month):
-            cal += f'{self.formatweek(week, events)}\n'
-        cal += f'</table>\n'
-        return cal
+            month_html += '<tr>'
+            for day, weekday in week:
+                month_html += self.formatday(day, events)
+            month_html += '</tr>'
+
+        month_html += '</table>'
+        return month_html
 
 #shows only 1 week without messing up the rest of the month
 class CalendarWeek(Calendar):
