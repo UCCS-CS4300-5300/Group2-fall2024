@@ -30,6 +30,9 @@ class Game(models.Model):
     release_date = models.DateField(blank=True, null=True)
     color = models.CharField(max_length=7, choices=COLOR_CHOICES, default='#FFFFFF')  # Set default color
     picture_link = models.CharField(max_length=1000, blank=True, null=True)
+    
+    #adding in this so peopel can upload pictures
+    picture_upload = models.ImageField(upload_to='images/', blank=True, null=True)
 
     def __str__(self):
         return self.name

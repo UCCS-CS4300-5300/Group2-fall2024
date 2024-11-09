@@ -4,6 +4,11 @@ from .views import *
 from django.contrib.auth import views as auth
 from .forms import *
 
+#stuff for image upload
+from django.conf import settings
+from django.conf.urls.static import static
+
+
 urlpatterns = [
     path('', index, name='index'),
     # include home path on url to match our navbar route
