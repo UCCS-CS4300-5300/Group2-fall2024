@@ -21,8 +21,6 @@ urlpatterns = [
 
     
     path('calendar/<int:user_id>/', CalendarView.as_view(), name = 'calendar' ),
-    path('generate_calendar_link/<int:user_id>/', views.generate_calendar_link, name='generate_calendar_link'),
-    path('calendar/access/', views.calendar_access, name='view_shared_calendar'),
     re_path(r'^event/new/$', views.event, name='event_new'),
     re_path(r'^event/edit/(?P<event_id>\d+)/$', views.event, name='event_edit'),
     
@@ -33,19 +31,23 @@ urlpatterns = [
     #url for event deletion that takes in user id and recipe id
     path('event_delete/<int:user_id>/<int:id>', views.deleteEvent, name='delete_event'),
 
-  
-    path('friends/', views.friends, name='friends'),  # Standard search page
+    # Standard search page
+    path('friends/', views.friends, name='friends'),  
     path('view_friends/', views.view_friends, name='view_friends'),
-    path('ajax_view_friends/', views.ajax_view_friends, name='ajax_view_friends'),
+    path('ajax_view_friends/', views.ajax_view_friends, name='ajax_view_friends'), # AJAX friends endpoint
     path('search/', views.ajax_search, name='ajax_search'),  # AJAX search endpoint
     
-    path('calendar/view/<int:user_id>/', CalendarView.as_view(), name='view_friend_calendar'),
+    #path to generate link with token
+    path('generate_calendar_link/', views.generate_calendar_link, name='generate_calendar_link'),
+    #path to grant access based on token
+    path('calendar/access/', views.calendar_access, name='view_shared_calendar'),
 
-    path('send_friend_request/<int:user_id>/', views.send_friend_request, name='send_friend_request'),
+    #handling Friend requests
+    path('send_friend_request/', views.send_friend_request, name='send_friend_request'),
     path('friend-requests/', views.view_friend_requests, name='view_friend_requests'),
     path('ajax/friend-requests/', views.ajax_friend_requests, name='ajax_friend_requests'),
     path('accept-friend-request/', views.accept_friend_request, name='accept_friend_request'),
     path('decline-friend-request/', views.decline_friend_request, name='decline_friend_request'),
     
-    path('delete_friend/<int:user_id>/', views.delete_friend, name='delete_friend'),
+    path('delete_friend/', views.delete_friend, name='delete_friend'),
 ]

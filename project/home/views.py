@@ -15,6 +15,9 @@ from django.contrib.auth.decorators import login_required
 from guardian.decorators import permission_required_or_403
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
+from django.http import QueryDict
+import json
+
 
 
 
@@ -167,7 +170,7 @@ def event_detail(request, event_id):
     # Check if a token-based session is set, allowing access regardless of authentication
     token_user_id = request.session.get('calendar_access_user_id')
     
-
+    is_friend = False
 
     if token_user_id == owner.id:
         #del self.request.session['calendar_access_user_id']  # Clear token after use
@@ -272,7 +275,7 @@ def Login(request):
             messages.success(request, f' welcome {username} !!')
             return redirect('index')
         else:
-            messages.info(request, f'account done not exit plz sign in')
+            messages.info(request, f'Please enter a correct username and password. Note that both fields may be case-sensitive.')
     form = AuthenticationForm()
     return render(request, 'login.html', {'form':form, 'title':'log in'})
 
@@ -311,14 +314,14 @@ def ajax_search(request):
 
                 # Check if a pending friend request exists
                 has_pending_request = FriendRequest.objects.filter(
-                    from_user=request.user, to_user=user, accepted=False
+                    Q(from_user=request.user, to_user=user) | Q(from_user=user, to_user=request.user), accepted=False
                 ).exists()
 
                 status = 'Send Friend Request'
                 if is_friend:
                     status = 'Already Friends'
                 elif has_pending_request:
-                    status = 'Request Sent'
+                    status = 'Request Pending'
 
                 results.append({
                     'username': user.username,
@@ -333,7 +336,7 @@ def ajax_search(request):
 
 @login_required
 # View to handle sending friend requests
-def send_friend_request(request, user_id):
+def send_friend_request(request):
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
         if user_id:
@@ -533,9 +536,16 @@ def view_friends(request):
     return render(request, 'social.html', {'friends': friends_list})
 
 @login_required
-def delete_friend(request, user_id):
+def delete_friend(request):
     try:
+        
         user = request.user
+
+        data = json.loads(request.body)
+        #data = QueryDict(request.body)
+        
+        user_id = data.get('friend_id')
+        
         friend = User.objects.get(id=user_id)
 
         # Check if they are friends (i.e., there exists an accepted FriendRequest)
@@ -562,7 +572,8 @@ def delete_friend(request, user_id):
         return JsonResponse({'success': False, 'message': 'User not found.'}, status=404)
 
 @login_required
-def generate_calendar_link(request, user_id):
+def generate_calendar_link(request):
+    user_id = request.GET.get('owner_id')
     user = User.objects.get(id=user_id)
     
     # Ensure the logged-in user is generating the link for their own calendar
@@ -578,7 +589,7 @@ def generate_calendar_link(request, user_id):
 
 def calendar_access(request):
     token = request.GET.get('token')
-    user_id = request.GET.get('user_id')
+    
 
     if not token:
         raise Http404("Token not provided")

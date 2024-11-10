@@ -88,7 +88,7 @@
   
   $(document).on('click', '#share-calendar-btn', function() {
     const userId = '{{ owner.id }}';  // Get the owner user ID dynamically from the template
-    const baseUrl = "{% url 'generate_calendar_link' 0 %}".replace("0/", userId);  // Build the URL for AJAX request
+    const baseUrl = "{% url 'generate_calendar_link' %}";  // Build the URL for AJAX request
 
     const button = $(this);
     button.prop('disabled', true);  // Disable the button immediately

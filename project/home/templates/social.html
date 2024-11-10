@@ -101,7 +101,7 @@
         
         function updateButtonState(userId, status) {
             const button = $(`button[data-user-id="${userId}"]`);
-            if (status === 'Request Sent' || status === 'Already Friends') {
+            if (status === 'Request Pending' || status === 'Already Friends') {
                 button.prop('disabled', true);
             }
             button.text(status);
@@ -147,20 +147,20 @@
         $(document).on('click', '.send-friend-request', function() {
 
             // Construct base URL dynamically
-            const baseUrl = "{% url 'send_friend_request' 0 %}".replace("0/", "");  // Remove placeholder '0' for dynamic use
+            const baseUrl = "{% url 'send_friend_request' %}";  // Remove placeholder '0' for dynamic use
             var userId = $(this).data('user-id');  // Get the ID of the user to send a friend request to
-            const url = `${baseUrl}${userId}/`
+            
 
             const button = $(this);  // Store the button element
 
             // Disable the button immediately
             button.prop('disabled', true);
-            button.text('Request Sent');  // Change the text to "Request Sent"
+            button.text('Request Pending');  // Change the text to "Request Pending"
            
-            friendStatuses[userId] = 'Request Sent'; // Update status in friendStatuses
+            friendStatuses[userId] = 'Request Pending'; // Update status in friendStatuses
 
             $.ajax({
-                url: url,  // The URL to the view handling the friend request
+                url: baseUrl,  // The URL to the view handling the friend request
                 method: 'POST',
                 data: {
                     'user_id': userId,
@@ -168,8 +168,8 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        button.text('Request Sent');
-                        friendStatuses[userId] = 'Request Sent'; // Confirm status
+                        button.text('Request Pending');
+                        friendStatuses[userId] = 'Request Pending'; // Confirm status
                     } else {
                         button.prop('disabled', false);
                         button.text('Send Friend Request');
@@ -315,13 +315,13 @@
             var friendId = $(this).data('friend-id');
             
             // Construct base URL dynamically
-            const baseUrl = "{% url 'delete_friend' 0 %}".replace("0", friendId); // Replace '0' with actual friend ID
+            const baseUrl = "{% url 'delete_friend' %}"; 
             const button = $(this);  // Store the button element
 
             // Disable the button immediately to prevent multiple clicks
             button.prop('disabled', true);
             button.text('Deleting...');  // Change button text to indicate the deletion is in progress
-
+            
             $.ajax({
                 url: baseUrl,  // The URL to the view handling the friend deletion
                 method: 'DELETE',
