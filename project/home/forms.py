@@ -6,6 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError  
 from django.forms.fields import EmailField  
 from django.forms.forms import Form  
+from django.contrib.auth.forms import PasswordChangeForm
 
 
 class CustomUserCreationForm(UserCreationForm):  
@@ -21,12 +22,11 @@ class CustomUserCreationForm(UserCreationForm):
             raise ValidationError("User Already Exist")  
         return username  
   
-    def email_clean(self):  
-        email = self.cleaned_data['email'].lower()  
-        new = User.objects.filter(email=email)  
-        if new.count():  
-            raise ValidationError(" Email Already Exist")  
-        return email  
+    def clean_email(self):  
+        email = self.cleaned_data['email'].lower()
+        if User.objects.filter(email=email).exists():
+                raise ValidationError("Email already exists.")
+        return email
   
     def clean_password2(self):  
         password1 = self.cleaned_data['password1']  
@@ -51,6 +51,8 @@ class EventForm(ModelForm):
         widgets = {
             'start_time': DateInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
             'end_time': DateInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'recurrence': forms.Select(),
+            'recurrence_end': DateInput(attrs={'type': 'date'}),
         }
         fields = '__all__'
         exclude = ['user']
@@ -60,16 +62,46 @@ class EventForm(ModelForm):
         # input_formats to parse HTML5 datetime-local input to datetime field
         self.fields['start_time'].input_formats = ('%Y-%m-%dT%H:%M',)
         self.fields['end_time'].input_formats = ('%Y-%m-%dT%H:%M',)
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        start_time = cleaned_data.get("start_time")
+        end_time = cleaned_data.get("end_time")
+        if start_time and end_time and end_time <= start_time:
+            self.add_error("end_time", "End time must be after start time")
+        return cleaned_data
 
 class GameForm(forms.ModelForm):
     class Meta:
         model = Game
         fields = '__all__'
         widgets = {
-            'release_date': forms.DateInput(attrs={'type': 'date'}),
+            'release_date': forms.DateInput(attrs={'type': 'date', 'placeholder': 'Optional'}),
+            'genre': forms.TextInput(attrs={'placeholder': 'Optional'}),
+            'platform': forms.Select(attrs={'placeholder': 'Optional'}),
+            'developer': forms.TextInput(attrs={'placeholder': 'Optional'}),
+            'color': forms.Select(attrs={'placeholder': 'Optional'}),
+            'picture_link': forms.TextInput(attrs={'placeholder': 'Optional'}),
         }
+        
 class UsersForm(ModelForm):
     class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'email',)
 
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(label='Old Password', widget=forms.PasswordInput)
+    new_password1 = forms.CharField(label='New Password', widget=forms.PasswordInput)
+    new_password2 = forms.CharField(label='Confirm New Password', widget=forms.PasswordInput)
+
+    class Meta:
+        model = User
+        fields = ('old_password', 'new_password1', 'new_password2')
+
+    def clean_new_password2(self):
+        password1 = self.cleaned_data.get('new_password1')
+        password2 = self.cleaned_data.get('new_password2')
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError("Passwords do not match.")
+        return password2

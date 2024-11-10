@@ -31,6 +31,10 @@ class Game(models.Model):
     developer = models.CharField(max_length=100, blank=True, null=True)
     release_date = models.DateField(blank=True, null=True)
     color = models.CharField(max_length=7, choices=COLOR_CHOICES, default='#FFFFFF')  # Set default color
+    picture_link = models.CharField(max_length=1000, blank=True, null=True)
+    
+    #adding in this so peopel can upload pictures
+    picture_upload = models.ImageField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -48,6 +52,16 @@ class Event(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, default = None)
+    ############### This is where recurring choices being implemented #################
+    RECURRING_CHOICES = [
+        ('none', 'None'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+    ]
+    
+    recurrence = models.CharField(max_length=20, choices=RECURRING_CHOICES, default='none')
+    recurrence_end = models.DateField(blank=True, null=True)  # End date for the recurrence
 
     class Meta:
         permissions = [("saved_events", "can save events")]
@@ -65,6 +79,9 @@ class Event(models.Model):
         super().save(*args, **kwargs)
         # Grant 'view_event' permission to the assigned user
         assign_perm('view_event', self.user, self)
+
+    def __str__(self):
+        return self.title
 
 User = get_user_model()
 
