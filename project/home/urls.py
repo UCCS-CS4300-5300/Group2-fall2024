@@ -4,6 +4,12 @@ from .views import *
 from django.contrib.auth import views as auth
 from .forms import *
 
+#stuff for image upload
+from django.conf import settings
+from django.conf.urls.static import static
+
+
+
 urlpatterns = [
     path('', index, name='index'),
     # include home path on url to match our navbar route
@@ -18,6 +24,7 @@ urlpatterns = [
     path('accounts/update_account/', views.update_account, name = "update_account"),
     
     path('calendar/<int:user_id>', CalendarView.as_view(), name = 'calendar' ),
+    path('calendarweek/<int:user_id>', CalendarViewWeek.as_view(), name = 'calendarweek' ),
     re_path(r'^event/new/$', views.event, name='event_new'),
     re_path(r'^event/edit/(?P<event_id>\d+)/$', views.event, name='event_edit'),
     
@@ -31,3 +38,8 @@ urlpatterns = [
     path('event_delete/<int:user_id>/<int:id>', views.deleteEvent, name='delete_event'),
     path('todo-list/', views.todo_list, name='todo_list'),
 ]
+
+#stuff for image upload
+if settings.DEBUG:
+       urlpatterns += static(settings.MEDIA_URL,
+                            document_root=settings.MEDIA_ROOT)

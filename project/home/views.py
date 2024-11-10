@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 import calendar
 from .models import *
 from django.contrib.auth.models import User
-from .utils import Calendar
+from .utils import Calendar, CalendarWeek
 from .forms import *
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
@@ -87,6 +87,35 @@ def next_month(d):
     next_month = last + timedelta(days=1)
     month = 'month=' + str(next_month.year) + '-' + str(next_month.month)
     return month
+
+#weekclaendar view
+class CalendarViewWeek(CalendarView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Get the current user from the request
+        user_id = self.request.user.id
+
+        # use today's date for the calendar
+        d = get_date(self.request.GET.get('month', None))
+
+        # Get user-specific information about theme
+        current_theme = self.request.COOKIES.get('theme', 'light')  # Default to 'light'
+
+        # Instantiate our calendar class with today's year and date
+        cal = CalendarWeek(d.year, d.month)
+
+        # Call the formatmonth method, which returns our calendar as a table
+        html_cal = cal.formatmonth(user_id=user_id, withyear=True) 
+        context['calendar'] = mark_safe(html_cal)
+        # Get adjacent months
+        context['prev_month'] = prev_month(d)
+        context['next_month'] = next_month(d)
+
+        #add theme
+        context['current_theme'] = current_theme
+
+        return context
 
 
 def event(request, event_id=None):
@@ -204,7 +233,7 @@ def create_game(request, game_id=None):
     game = get_object_or_404(Game, id=game_id) if game_id else None
 
     if request.method == 'POST':
-        form = GameForm(request.POST, instance=game)
+        form = GameForm(request.POST, request.FILES, instance=game)
         if form.is_valid():
             form.save()
             return redirect(reverse('calendar', args=[request.user.id]))  # Redirect to a list of games or wherever
