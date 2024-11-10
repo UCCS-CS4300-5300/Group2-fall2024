@@ -5,6 +5,8 @@ from home.models import *
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from .forms import CustomUserCreationForm, EventForm, GameForm
+from django.contrib.messages import get_messages
+from django.utils.http import urlencode
 
 
 # Create your tests here.
@@ -353,3 +355,117 @@ class GameFormTests(TestCase):
         form = GameForm(data=form_data)
         print(form.errors)
         self.assertTrue(form.is_valid())
+
+class RecurringEventTests(TestCase):
+
+    def setUp(self):
+        # Create a user
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.client.login(username='testuser', password='testpassword')
+
+        # Create an event
+        self.event = Event.objects.create(
+            title='Test Recurring Event',
+            description='Test Description',
+            start_time=timezone.make_aware(datetime(2024, 1, 1, 10, 0, 0)),
+            end_time=timezone.make_aware(datetime(2024, 1, 1, 11, 0, 0)),
+            user=self.user,
+            recurrence='daily',  # Setting recurrence to daily for the test
+            recurrence_end=datetime(2024, 1, 10)  # End after 10th January
+        )
+
+    def test_daily_recurring_event_creation(self):
+        # Create recurring event
+        response = self.client.post(reverse('event_new'), {
+            'title': 'Test Recurring Event',
+            'description': 'Test Description',
+            'start_time': self.event.start_time,
+            'end_time': self.event.end_time,
+            'user': self.user.id,
+            'recurrence': 'daily',
+            'recurrence_end': '2024-01-10',  # Set the end date for recurrence
+            'priority': 2,
+        })
+
+        # Ensure the event was created
+        event_exists = Event.objects.filter(title='Test Recurring Event', user=self.user).count()
+        self.assertEqual(event_exists, 10)  # Should create 10 events (from Jan 1 to Jan 10)
+
+    def test_weekly_recurring_event_creation(self):
+        # Create weekly recurring event
+        response = self.client.post(reverse('event_new'), {
+            'title': 'Test Weekly Recurring Event',
+            'description': 'Test Description',
+            'start_time': self.event.start_time,
+            'end_time': self.event.end_time,
+            'user': self.user.id,
+            'recurrence': 'weekly',
+            'recurrence_end': '2024-01-31',  # Set the end date for recurrence
+            'priority': 2,
+        })
+
+        # Ensure the event was created weekly
+        event_exists = Event.objects.filter(title='Test Weekly Recurring Event', user=self.user).count()
+        self.assertEqual(event_exists, 5)  # Should create 5 events (one per week)
+
+    def test_monthly_recurring_event_creation(self):
+        # Create monthly recurring event
+        response = self.client.post(reverse('event_new'), {
+            'title': 'Test Monthly Recurring Event',
+            'description': 'Test Description',
+            'start_time': self.event.start_time,
+            'end_time': self.event.end_time,
+            'user': self.user.id,
+            'recurrence': 'monthly',
+            'recurrence_end': '2024-12-31',  # Set the end date for recurrence
+            'priority': 2,
+        })
+
+        # Ensure the event was created monthly
+        event_exists = Event.objects.filter(title='Test Monthly Recurring Event', user=self.user).count()
+        self.assertGreaterEqual(event_exists, 1)  # Should create at least one event in the first month
+
+class UpdatePasswordTests(TestCase):
+    
+    def setUp(self):
+        # Create a user for testing
+        self.user = User.objects.create_user(username='testuser', password='oldpassword')
+        self.client.login(username='testuser', password='oldpassword')
+    
+    def test_update_password_mismatch(self):
+        # Try submitting a mismatched password form
+        url = reverse('update_password')
+        response = self.client.post(url, {
+            'old_password': 'oldpassword',
+            'new_password1': 'newpassword',
+            'new_password2': 'mismatchpassword',  # Mismatch in new passwords
+        })
+        self.assertFormError(response, 'password_form', 'new_password2', "Passwords do not match.")
+    
+    def test_update_password_success(self):
+        # Try submitting a valid password update form
+        url = reverse('update_password')
+        response = self.client.post(url, {
+            'old_password': 'oldpassword',
+            'new_password1': 'newpassword123',  # Valid new password
+            'new_password2': 'newpassword123',  # Matching confirmation password
+        })
+        # Check if redirected correctly after successful update
+        self.assertRedirects(response, reverse('user_page'))
+        
+        # Verify user can log in with the new password
+        self.client.logout()
+        login = self.client.login(username='testuser', password='newpassword123')
+        self.assertTrue(login)
+    
+    def test_password_update_shows_success_message(self):
+        # Check if success message is shown after password update
+        url = reverse('update_password')
+        response = self.client.post(url, {
+            'old_password': 'oldpassword',
+            'new_password1': 'newpassword123',
+            'new_password2': 'newpassword123',
+        })
+        # Verify that the success message is shown
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(str(messages[0]), 'Your password was successfully updated!')
