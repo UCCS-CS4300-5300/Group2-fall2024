@@ -21,7 +21,8 @@ urlpatterns = [
 
     
     path('calendar/<int:user_id>/', CalendarView.as_view(), name = 'calendar' ),
-    #path('calendar/<token>/', CalendarView.as_view(), name = 'calendar' ),
+    path('generate_calendar_link/<int:user_id>/', views.generate_calendar_link, name='generate_calendar_link'),
+    path('calendar/access/', views.calendar_access, name='view_shared_calendar'),
     re_path(r'^event/new/$', views.event, name='event_new'),
     re_path(r'^event/edit/(?P<event_id>\d+)/$', views.event, name='event_edit'),
     

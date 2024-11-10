@@ -29,29 +29,38 @@ class CalendarView(generic.ListView):
 
     def dispatch(self, request, *args, **kwargs):
         user_id = self.kwargs.get('user_id')
+
+        # Check if a token-based session is set, allowing access regardless of authentication
+        token_user_id = self.request.session.get('calendar_access_user_id')
+
+        if token_user_id == user_id:
+                # Clear the token after access is granted
+                #del self.request.session['calendar_access_user_id']
+                # User is accessing calendar via token, no need to clear token yet
+                pass
         
-        # If the user is not authenticated, allow viewing only a public calendar or redirect
-        if not request.user.is_authenticated:
-            # If the user_id is not 'anonymous', redirect to the index
-            #if request.user.id != None:  # Make sure you have a proper condition for anonymous users
-                
-            return redirect('index')  # Redirect to a default page for anonymous users (e.g., login or homepage)
+        # Allow access if the user is the owner or has a valid token
+        elif not request.user.is_authenticated:
             
-        else:
-            # Check if the user_id is valid (i.e., a logged-in user or their friends)
-            if request.user.id != user_id:  # Ensure the user_id is treated as an integer
-                # Check if the user is a friend of the requested user
-                is_friend = FriendRequest.objects.filter(
-                    (Q(from_user=request.user, to_user__id=user_id) |
-                    Q(from_user__id=user_id, to_user=request.user)) & 
-                    Q(accepted=True)
-                ).exists()
+            return redirect('index')  # Redirect unauthenticated users without a token
 
-                # If not a friend and not the same user, deny access
-                if not is_friend:
-                    return redirect(reverse('calendar', args=[request.user.id]))  # Redirect to home if the user is not the same or a friend
+        elif request.user.id != user_id:
+            # Check if the user is a friend of the requested user
+            is_friend = FriendRequest.objects.filter(
+                (Q(from_user=request.user, to_user__id=user_id) |
+                 Q(from_user__id=user_id, to_user=request.user)) &
+                Q(accepted=True)
+            ).exists()
 
-        # Continue with the normal dispatch if everything is valid
+            # If not a friend and not the owner, check token-based access
+            if not is_friend:
+                if token_user_id == user_id:
+                    #del self.request.session['calendar_access_user_id']  # Clear token after use
+                    pass
+                else:
+                    return redirect(reverse('calendar', args=[request.user.id]))  # Redirect if access denied
+
+        # Proceed with the normal dispatch if everything is valid
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -79,14 +88,18 @@ class CalendarView(generic.ListView):
         #add theme
         context['current_theme'] = current_theme
 
-        #if not self:
-        # Check if the calendar belongs to a friend (or self)
-        context['is_friend_calendar'] = is_friend_calendar(self, user_id)
-
-        if self.request.user.is_authenticated:
-            context['is_authenticate'] = False
+        
+        token_user_id = self.request.session.get('calendar_access_user_id')
+        if not self.request.user.is_authenticated:
+            context['is_friend_calendar'] = True
+        elif token_user_id == user_id:
+            #del self.request.session['calendar_access_user_id']  # Clear token after use
+            context['is_friend_calendar'] = True
         else:
-            context['is_authenticate'] = True
+            #if not self:
+            # Check if the calendar belongs to a friend (or self)
+            context['is_friend_calendar'] = is_friend_calendar(self, user_id)
+        
 
         context['owner'] = get_object_or_404(User, pk=user_id)
 
@@ -151,7 +164,15 @@ def event_detail(request, event_id):
 
     owner = event.user
 
-    if request.user.id != owner.id:
+    # Check if a token-based session is set, allowing access regardless of authentication
+    token_user_id = request.session.get('calendar_access_user_id')
+    
+
+
+    if token_user_id == owner.id:
+        #del self.request.session['calendar_access_user_id']  # Clear token after use
+        is_friend = True
+    elif request.user.id != owner.id:
         # Check if the user_id belongs to a friend
         is_friend = FriendRequest.objects.filter(
             (Q(from_user=request.user, to_user__id=owner.id) |
@@ -540,3 +561,36 @@ def delete_friend(request, user_id):
     except User.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'User not found.'}, status=404)
 
+@login_required
+def generate_calendar_link(request, user_id):
+    user = User.objects.get(id=user_id)
+    
+    # Ensure the logged-in user is generating the link for their own calendar
+    if user != request.user:
+        return JsonResponse({'success': False, 'message': 'You are not authorized to share this calendar.'})
+    
+    # Create a CalendarAccess instance to generate a unique token for sharing the calendar
+    calendar_access = CalendarAccess.objects.create(user=user)
+    share_link = f"{request.build_absolute_uri('/calendar/access/')}?token={calendar_access.token}"
+
+    # Return the shareable link as part of the response
+    return JsonResponse({'success': True, 'share_link': share_link})
+
+def calendar_access(request):
+    token = request.GET.get('token')
+    user_id = request.GET.get('user_id')
+
+    if not token:
+        raise Http404("Token not provided")
+
+    try:
+        calendar_access = CalendarAccess.objects.get(token=token)
+    except CalendarAccess.DoesNotExist:
+        raise Http404("Invalid or expired token")
+
+
+    # Set a session variable indicating access for this specific user
+    request.session['calendar_access_user_id'] = calendar_access.user.id
+
+    # Redirect to CalendarView with the owner's user_id
+    return redirect('calendar', user_id=calendar_access.user.id)

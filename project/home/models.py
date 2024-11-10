@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.db.models import Q
 from guardian.shortcuts import assign_perm
+import uuid
 
 # Create your models here.
 
@@ -85,3 +86,11 @@ class FriendRequest(models.Model):
         ).exclude(id=self.from_user.id)  # Exclude the current user
 
         return friends
+
+class CalendarAccess(models.Model):
+    user = models.ForeignKey(User, related_name='calendar_access', on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Access for {self.user.username} - {self.token}"

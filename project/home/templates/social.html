@@ -236,7 +236,7 @@
                     if (response.friends.length > 0) {
                         response.friends.forEach(function(friend) {
                             const friendItem = `
-                                <li id="list-${friend.username}">${friend.username} is your friend
+                                <li id="list-${friend.username}" class="mb-2">${friend.username} is your friend
                                 <button class="delete-friend-btn btn" data-friend-id="${friend.user_id}" style="background-color: red !important;">Delete Friend</button>
                                 <a href="/calendar/${friend.user_id}/" class="view-calendar-button btn">View Calendar</a></li>`;
                                 
