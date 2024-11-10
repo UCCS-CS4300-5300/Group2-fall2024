@@ -19,6 +19,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from collections import OrderedDict
 from django.db.models import Q
+from .forms import CustomPasswordChangeForm
  
 
 
@@ -117,6 +118,13 @@ class CalendarViewWeek(CalendarView):
 
         return context
 
+########### create event ##################################### 
+def get_last_day_of_month(year, month):
+    """Return the last day of the specified month."""
+    if month == 12:
+        return 31
+    else:
+        return (datetime(year, month + 1, 1) - timedelta(days=1)).day
 
 def event(request, event_id=None):
     instance = Event()
@@ -312,15 +320,19 @@ def update_account(request):
 
 @login_required
 def update_password(request):
-    password_form = CustomPasswordChangeForm(user=request.user)
     if request.method == 'POST':
-        password_form = CustomPasswordChangeForm(request.user, request.POST)
-        if password_form.is_valid():
-            user = password_form.save()
-            update_session_auth_hash(request, user)  # Prevents logout after password change
-            messages.success(request, 'Your password has been updated successfully!')
-            return redirect('user_page')
-    return render(request, 'update_password.html', {'password_form': password_form})
+        form = CustomPasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, form.user)  # Keeps the user logged in after password change
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('user_page')  # Redirect to the user profile page after successful update
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = CustomPasswordChangeForm(user=request.user)
+    
+    return render(request, 'update_password.html', {'password_form': form})
 
 ################ logout ################################################### 
 
