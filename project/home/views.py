@@ -44,7 +44,7 @@ class CalendarView(generic.ListView):
 
         # Check if a token-based session is set, allowing access regardless of authentication
         token_user_id = self.request.session.get('calendar_access_user_id')
-
+        
         if token_user_id == user_id:
                 # Clear the token after access is granted
                 #del self.request.session['calendar_access_user_id']

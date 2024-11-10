@@ -238,7 +238,7 @@
                             const friendItem = `
                                 <li id="list-${friend.username}" class="mb-2">${friend.username} is your friend
                                 <button class="delete-friend-btn btn" data-friend-id="${friend.user_id}" style="background-color: red !important;">Delete Friend</button>
-                                <a href="/calendar/${friend.user_id}/" class="view-calendar-button btn">View Calendar</a></li>`;
+                                <a href="/calendar/${friend.user_id}" class="view-calendar-button btn">View Calendar</a></li>`;
                                 
                             friendsList.append(friendItem);
 
@@ -326,10 +326,11 @@
                 url: baseUrl,  // The URL to the view handling the friend deletion
                 method: 'DELETE',
                 headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-                data: {
+                contentType: 'application/json',  // Set content type to JSON
+                data: JSON.stringify({
                     'friend_id': friendId,
-                    'csrfmiddlewaretoken': '{{ csrf_token }}'  // Include CSRF token for security
-                },
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'  // CSRF token for security
+                }),
                 success: function(response) {
                     
                     if (response.success) {
