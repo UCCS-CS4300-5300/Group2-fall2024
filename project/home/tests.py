@@ -197,17 +197,25 @@ class TodoListViewTests(TestCase):
         self.other_user = User.objects.create_user(username='otheruser', password='testpass456')
         self.client.login(username='testuser', password='testpass123')
 
+        # Use the current date in the test setup to match the view's filter
+        current_date = timezone.localtime(timezone.now()).date()
+        start_time_user = timezone.make_aware(datetime.combine(current_date, datetime.min.time()))
+        end_time_user = start_time_user + timedelta(hours=1)
+        
+        start_time_other_user = start_time_user + timedelta(hours=2)
+        end_time_other_user = start_time_other_user + timedelta(hours=1)
+
         # Create events for each user
         self.event1 = Event.objects.create(
             title='User Event',
-            start_time=timezone.now() + timedelta(hours=1),
-            end_time=timezone.now() + timedelta(hours=2),
+            start_time=start_time_user,
+            end_time=end_time_user,
             user=self.user
         )
         self.event2 = Event.objects.create(
             title='Other User Event',
-            start_time=timezone.now() + timedelta(hours=3),
-            end_time=timezone.now() + timedelta(hours=4),
+            start_time=start_time_other_user,
+            end_time=end_time_other_user,
             user=self.other_user
         )
 
