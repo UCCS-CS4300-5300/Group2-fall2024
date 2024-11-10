@@ -22,12 +22,11 @@ class CustomUserCreationForm(UserCreationForm):
             raise ValidationError("User Already Exist")  
         return username  
   
-    def email_clean(self):  
-        email = self.cleaned_data['email'].lower()  
-        new = User.objects.filter(email=email)  
-        if new.count():  
-            raise ValidationError(" Email Already Exist")  
-        return email  
+    def clean_email(self):  
+        email = self.cleaned_data['email'].lower()
+        if User.objects.filter(email=email).exists():
+                raise ValidationError("Email already exists.")
+        return email
   
     def clean_password2(self):  
         password1 = self.cleaned_data['password1']  
@@ -63,6 +62,14 @@ class EventForm(ModelForm):
         # input_formats to parse HTML5 datetime-local input to datetime field
         self.fields['start_time'].input_formats = ('%Y-%m-%dT%H:%M',)
         self.fields['end_time'].input_formats = ('%Y-%m-%dT%H:%M',)
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        start_time = cleaned_data.get("start_time")
+        end_time = cleaned_data.get("end_time")
+        if start_time and end_time and end_time <= start_time:
+            self.add_error("end_time", "End time must be after start time")
+        return cleaned_data
 
 class GameForm(forms.ModelForm):
     class Meta:

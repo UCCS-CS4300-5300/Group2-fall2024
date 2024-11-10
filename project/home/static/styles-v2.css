@@ -278,12 +278,14 @@ img {
 
 /* Add the Game Image styling specific to todo-list-page */
 .todo-list-page .game-image {
-    width: 100%;
-    height: auto;
-    max-width: 350px; /* Ensure images don't stretch beyond the tile's width */
-    margin-bottom: 15px;
-    border-radius: 10px;
+    width: 100%;              /* Ensures image fills container horizontally */
+    height: 200px;            /* Set a fixed height for uniformity */
+    object-fit: contain;      /* Maintains aspect ratio without cropping */
+    background-color: #000;   /* Black background for any extra space */
+    border-radius: 8px;       /* Optional: rounded corners to match tile style */
 }
+
+
 
 /* Responsive: Adjustments for smaller screen sizes */
 @media (max-width: 1024px) {

@@ -1,2 +1,4 @@
 sendgrid.env
 sendgrid.env
+
+db.sqlite3
