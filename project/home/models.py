@@ -2,6 +2,9 @@ from django.db import models
 from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from django.db.models import Q
+from guardian.shortcuts import assign_perm
+import uuid
 
 # Create your models here.
 
@@ -28,6 +31,10 @@ class Game(models.Model):
     developer = models.CharField(max_length=100, blank=True, null=True)
     release_date = models.DateField(blank=True, null=True)
     color = models.CharField(max_length=7, choices=COLOR_CHOICES, default='#FFFFFF')  # Set default color
+    picture_link = models.CharField(max_length=1000, blank=True, null=True)
+    
+    #adding in this so peopel can upload pictures
+    picture_upload = models.ImageField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -45,6 +52,16 @@ class Event(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, default = None)
+    ############### This is where recurring choices being implemented #################
+    RECURRING_CHOICES = [
+        ('none', 'None'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+    ]
+    
+    recurrence = models.CharField(max_length=20, choices=RECURRING_CHOICES, default='none')
+    recurrence_end = models.DateField(blank=True, null=True)  # End date for the recurrence
 
     class Meta:
         permissions = [("saved_events", "can save events")]
@@ -58,6 +75,39 @@ class Event(models.Model):
         # Override default url settings, make font black for readability
         return f'<a href="{url}" style="color: #000;">{self.title}</a>'
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Grant 'view_event' permission to the assigned user
+        assign_perm('view_event', self.user, self)
 
+    def __str__(self):
+        return self.title
 
 User = get_user_model()
+
+class FriendRequest(models.Model):
+    from_user = models.ForeignKey(User, related_name='sent_requests', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name='received_requests', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    accepted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.from_user.username} to {self.to_user.username}'
+
+    @property
+    def friends(self):
+        # Get users who have accepted friend requests in either direction
+        friends = User.objects.filter(
+            Q(id__in=FriendRequest.objects.filter(from_user=self.from_user, accepted=True).values_list('to_user', flat=True)) |
+            Q(id__in=FriendRequest.objects.filter(to_user=self.from_user, accepted=True).values_list('from_user', flat=True))
+        ).exclude(id=self.from_user.id)  # Exclude the current user
+
+        return friends
+
+class CalendarAccess(models.Model):
+    user = models.ForeignKey(User, related_name='calendar_access', on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Access for {self.user.username} - {self.token}"

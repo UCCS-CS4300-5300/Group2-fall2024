@@ -1,0 +1,377 @@
+{% extends "base_template.html" %}
+
+{% block title %}Socials{% endblock %}
+{% block content %}
+
+    {% load static %}
+    
+    {% if user.first_name %}
+        Welcome, {{ user.first_name }}<br>
+    {% else %}
+        Welcome, {{ user.username }}<br>
+    {% endif %}
+    
+    <h1>Search for Users</h1>
+    
+    <!-- Search form -->
+    <form method="POST" id="search-form">
+        {% csrf_token %}
+        <input type="text" name="query" id="search-input" placeholder="Search for users" autocomplete="off">
+        
+        <!-- Optional search button -->
+        <button type="button" id="search-btn" class="btn">Search</button>
+    </form>
+
+    <!-- Search results will be displayed here -->
+    <div id="search-results">
+        <ul id="user-list">
+            <!-- Results will be populated dynamically by jQuery -->
+        </ul>
+    </div>
+
+    <h1>Friend Requests</h1>
+    <ul id="friend-requests">
+        {% for request in pending_requests %}
+            <li id="request-{{ request.id }}">
+                <p>{{ request.from_user.username }} sent you a friend request on {{ request.created_at }}</p>
+                <button class="accept-request" data-request-id="{{ request.id }}">Accept</button>
+                <button class="decline-request" data-request-id="{{ request.id }}">Decline</button>
+            </li>
+        {% empty %}
+            <li>No pending friend requests.</li>
+        {% endfor %}
+    </ul>
+
+    <h1>Your Friends</h1>
+    <div id="friends-list">
+        {% for friend in friends %}
+            <li id="list-{{ friend.username }}">
+                <p>{{ friend.username }} is your friend</p>
+                <button class="delete-friend-btn" data-friend-id="{{ friend.id }}">Delete Friend</button>
+            </li>
+        {% empty %}
+            <li>No Friends.</li>
+        {% endfor %}
+    </div>
+
+{% endblock %}
+    
+{% block scripts %}
+    
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        let lastQuery = '';
+        // Triggered on input change in the search field
+        $('#search-input').on('input', function() {
+            var query = $(this).val();  // Get the value of the search input
+
+            // Only perform search if the input length is greater than 2
+            if (query.length > 2) {
+                lastQuery = query;
+                searchUsers(query); // Call function to perform search
+            } else {
+                $('#user-list').html('');  // Clear results if query length is less than 3
+            }
+        });
+
+
+        // Trigger search when the search button is clicked
+        $('#search-btn').on('click', function() {
+            var query = $('#search-input').val(); // Get the value of the search input
+            if (query.length > 2) {
+                lastQuery = query;
+                searchUsers(query); // Perform search when the button is clicked
+            } else {
+                $('#user-list').html('<li>Please enter at least 3 characters to search.</li>');
+            }
+        });
+
+        // Trigger search when the Enter key is pressed
+        $('#search-input').on('keypress', function(e) {
+            if (e.keyCode === 13) {  // 13 is the keycode for Enter
+                e.preventDefault();  // Prevent the default form submission
+                $('#search-btn').click();  // Trigger the search button click
+            }
+        });
+        
+        // Object to store friend statuses to avoid re-enabling buttons
+        const friendStatuses = {};
+        
+        function updateButtonState(userId, status) {
+            const button = $(`button[data-user-id="${userId}"]`);
+            if (status === 'Request Pending' || status === 'Already Friends') {
+                button.prop('disabled', true);
+            }
+            button.text(status);
+        }
+
+        // Function to perform the AJAX search
+        function searchUsers(query) {
+            $.ajax({
+                url: "{% url 'ajax_search' %}",
+                data: { 'query': query },
+                dataType: 'json',
+                success: function(data) {
+                    let results = '';
+                    
+                    if (data.length > 0) {
+                        data.forEach(function(user) {
+                            const status = user.status;
+                            
+                            let buttonHtml;
+
+                            if (status === 'Send Friend Request') {
+                                buttonHtml = `<button class="send-friend-request btn" data-user-id="${user.user_id}">${status}</button>`;
+                            } else {
+                                buttonHtml = `<button class="btn" disabled>${status}</button>`;
+                            }
+
+                            results += `<li class="mt-3">${user.username} ${buttonHtml}</li>`;
+                            friendStatuses[user.user_id] = status;
+                            
+                        });
+                        $('#user-list').html(results);
+                    } else {
+                        $('#user-list').html('<li>No users found.</li>');
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    console.log("Error: " + errmsg);
+                }
+            });
+        }
+
+        // Handle friend request button click
+        $(document).on('click', '.send-friend-request', function() {
+
+            // Construct base URL dynamically
+            const baseUrl = "{% url 'send_friend_request' %}";  // Remove placeholder '0' for dynamic use
+            var userId = $(this).data('user-id');  // Get the ID of the user to send a friend request to
+            
+
+            const button = $(this);  // Store the button element
+
+            // Disable the button immediately
+            button.prop('disabled', true);
+            button.text('Request Pending');  // Change the text to "Request Pending"
+           
+            friendStatuses[userId] = 'Request Pending'; // Update status in friendStatuses
+
+            $.ajax({
+                url: baseUrl,  // The URL to the view handling the friend request
+                method: 'POST',
+                data: {
+                    'user_id': userId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'  // Include CSRF token for security
+                },
+                success: function(response) {
+                    if (response.success) {
+                        button.text('Request Pending');
+                        friendStatuses[userId] = 'Request Pending'; // Confirm status
+                    } else {
+                        button.prop('disabled', false);
+                        button.text('Send Friend Request');
+                        delete friendStatuses[userId]; // Reset if request fails
+                        alert(response.message);
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    console.log("Error: " + errmsg);
+                    button.prop('disabled', false);
+                    button.text('Send Friend Request');
+                }
+            });
+        });
+
+        function fetchFriendRequests() {
+            // Rerun searchUsers to refresh buttons in the search list
+            if (lastQuery.length > 2) searchUsers(lastQuery);
+            $.ajax({
+                url: "{% url 'ajax_friend_requests' %}",
+                method: "GET",
+                success: function(response) {
+                    
+                    const requestsList = $('#friend-requests');
+                    requestsList.empty();  // Clear the current list
+
+                    if (response.requests.length > 0) {
+                        response.requests.forEach(function(request) {
+                            const requestItem = `<li id="request-${request.request_id}">
+                                                    <p>${request.from_user} sent you a friend request on ${request.created_at}</p>
+                                                    <button class="accept-request btn" data-request-id="${request.request_id}">Accept</button>
+                                                    <button class="decline-request btn" data-request-id="${request.request_id}">Decline</button>
+                                                </li>`;
+                            requestsList.append(requestItem);
+
+                            // Mark user as having a pending request in friendStatuses
+                            friendStatuses[request.from_user_id] = 'Pending';
+                            updateButtonState(request.from_user_id, 'Pending');
+                        });
+                    } else {
+                        requestsList.append('<li>No pending friend requests.</li>');
+                    }
+
+                    
+                },
+                error: function(xhr, errmsg, err) {
+                    console.log("Error: " + errmsg);
+                }
+            });
+        }
+
+        function fetchFriends() {
+            // Rerun searchUsers to refresh buttons in the search list
+            if (lastQuery.length > 2) searchUsers(lastQuery);
+            $.ajax({
+                url: "{% url 'ajax_view_friends' %}",
+                method: 'GET',
+                success: function(response) {
+                    
+
+                    const friendsList = $('#friends-list');
+                    friendsList.empty();  // Clear the current list
+
+                    if (response.friends.length > 0) {
+                        response.friends.forEach(function(friend) {
+                            const friendItem = `
+                                <li id="list-${friend.username}" class="mb-2">${friend.username} is your friend
+                                <button class="delete-friend-btn btn" data-friend-id="${friend.user_id}" style="background-color: red !important;">Delete Friend</button>
+                                <a href="/calendar/${friend.user_id}" class="view-calendar-button btn">View Calendar</a></li>`;
+                                
+                            friendsList.append(friendItem);
+
+                            // Update friend status to "Already Friends" to keep the button disabled
+                            friendStatuses[friend.user_id] = 'Already Friends';
+                            updateButtonState(friend.user_id, 'Already Friends');
+                        });
+                    } else {
+                        friendsList.append('<li>No Friends.</li>');
+                    }
+                    // Rerun searchUsers to refresh buttons in the search list
+                    if (lastQuery.length > 2) searchUsers(lastQuery);
+
+                    
+
+
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading friends:', error);
+                }
+            });
+        }
+
+        
+
+        
+
+        // Handle accept request button click
+        $(document).on('click', '.accept-request', function() {
+            const requestId = $(this).data('request-id');
+            $.ajax({
+                url: '/accept-friend-request/',
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                data: {
+                    'request_id': requestId,
+                },
+                success: function(response) {
+                    if (response.success) {
+                        
+                        $(`#request-${requestId}`).remove();  // Optionally remove the request from the list
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+
+        // Handle decline request button click
+        $(document).on('click', '.decline-request', function() {
+            const requestId = $(this).data('request-id');
+            $.ajax({
+                url: "{% url 'decline_friend_request' %}",
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                data: {
+                    'request_id': requestId,
+                },
+                success: function(response) {
+                    if (response.success) {
+                        
+                        $(`#request-${requestId}`).remove();  // Optionally remove the request from the list
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+
+        $(document).on('click', '.delete-friend-btn', function() {
+            // Get the ID of the friend to delete
+            var friendId = $(this).data('friend-id');
+            
+            // Construct base URL dynamically
+            const baseUrl = "{% url 'delete_friend' %}"; 
+            const button = $(this);  // Store the button element
+
+            // Disable the button immediately to prevent multiple clicks
+            button.prop('disabled', true);
+            button.text('Deleting...');  // Change button text to indicate the deletion is in progress
+            
+            $.ajax({
+                url: baseUrl,  // The URL to the view handling the friend deletion
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                contentType: 'application/json',  // Set content type to JSON
+                data: JSON.stringify({
+                    'friend_id': friendId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'  // CSRF token for security
+                }),
+                success: function(response) {
+                    
+                    if (response.success) {
+                        // If successful, remove the friend from the UI
+                        $(`#friend-${friendId}`).remove(); // Remove the friend element from the list
+                        
+                        // Update the friendStatuses object to re-enable the button
+                        friendStatuses[friendId] = 'Send Friend Request'; // Reset status to "Send Friend Request"
+                        updateButtonState(friendId, 'Send Friend Request'); // Update button state for this friend
+
+                        // Optionally refresh the search results to update the buttons
+                        if (lastQuery.length > 2) {
+                            searchUsers(lastQuery);
+                        }
+
+                        alert(response.message);  // Show success message
+
+                    } else {
+                        // If deletion failed, enable the button again and reset text
+                        button.prop('disabled', false);
+                        button.text('Delete Friend');
+                        alert(response.message);  // Show error message
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    console.log("Error: " + errmsg);
+                    button.prop('disabled', false);
+                    button.text('Delete Friend');
+                    alert('An error occurred while deleting the friend. Please try again.');
+                }
+            });
+        });
+
+        
+        
+        // Initial fetch on page load and at intervals
+        fetchFriendRequests();
+        fetchFriends();
+        setInterval(fetchFriendRequests, 3000);
+        setInterval(fetchFriends, 3000);
+
+    });
+</script>
+{% endblock %}

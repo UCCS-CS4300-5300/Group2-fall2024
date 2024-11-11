@@ -97,6 +97,11 @@ img {
     border-radius: 5px;
     margin-top: 0 px;
 }
+.btn[disabled] {
+    background-color: #ccc;  /* Light grey color for disabled buttons */
+    cursor: not-allowed;     /* Change cursor to indicate it's disabled */
+    color: #666;             /* Slightly darker text for disabled look */
+}
 
 .btn:hover {
     background-color: #28692b !important; /* Darker green on hover */
@@ -122,5 +127,195 @@ img {
         list-style-type: none;
         text-align: left !important;
         padding: 10px 0px;
+    }
+}
+/* Main Content Styles for To-Do List Page */
+.todo-list-page .main-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; /* Ensure space between the tiles */
+    align-items: flex-start; /* Align the tiles at the top */
+    margin: 80px auto;
+    padding: 20px;
+    width: 100%;
+    max-width: 1200px;
+}
+
+/* Game Section Styles (Tile Style) for To-Do List Page */
+.todo-list-page .game-section {
+    background-color: #444; /* Dark background for each game tile in light mode */
+    border-radius: 10px;
+    margin: 20px 10px; /* Spacing between tiles */
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease-in-out;
+    flex: 1 1 auto; /* Allow the tile to take up 30% of the available space */
+    max-width: 350px; /* Set a maximum width for each tile */
+    min-height: auto; /* Ensure the tile has a minimum height */
+    height: auto; /* Allow height to grow depending on the number of events inside */
+}
+
+/* On hover, slightly zoom the tile */
+.todo-list-page .game-section:hover {
+    transform: scale(1.05);
+}
+
+.todo-list-page .game-section h2 {
+    color: #fff; /* Light text for game titles */
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    text-transform: capitalize;
+    border-bottom: 2px solid #4CAF50;
+    padding-bottom: 10px;
+}
+
+/* Event List Styling for To-Do List Page */
+.todo-list-page .event-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1; /* Allow event list to grow and fill space in the tile */
+}
+
+/* Event Item Styling (Tile) */
+.todo-list-page .event-item {
+    background-color: #f9f9f9; /* White background for each event */
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s;
+}
+
+/* Event Hover Effect */
+.todo-list-page .event-item:hover {
+    background-color: #f1f1f1; /* Slightly lighter background on hover */
+}
+
+.todo-list-page .event-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Event Details Styling for To-Do List Page */
+.todo-list-page .event-details {
+    color: #444; /* Dark text */
+}
+
+.todo-list-page .event-details p {
+    margin: 8px 0;
+    font-size: 1.1em;
+}
+
+.todo-list-page strong {
+    color: #4CAF50;
+}
+
+/* Light Mode Styles */
+[data-theme="light"] .todo-list-page .game-section {
+    background-color: #333; /* Darker background for game tiles in light mode */
+    color: #fff; /* Light text */
+    border: 1px solid #444; /* Darker border for better contrast */
+}
+
+[data-theme="light"] .todo-list-page .game-section h2 {
+    color: #fff; /* Light text for game titles */
+    border-bottom: 2px solid #4CAF50;
+}
+
+[data-theme="light"] .todo-list-page .event-item {
+    background-color: #ffffff; /* White background for events */
+    color: #333; /* Dark text for events */
+    border: 1px solid #ddd; /* Light border for events */
+}
+
+[data-theme="light"] .todo-list-page .event-item:hover {
+    background-color: #f1f1f1; /* Slightly lighter background on hover */
+}
+
+[data-theme="light"] .todo-list-page .event-details strong {
+    color: #4CAF50; /* Green accent */
+}
+
+[data-theme="light"] .todo-list-page .event-item a {
+    color: #4CAF50; /* Green links in light mode */
+}
+
+[data-theme="light"] .todo-list-page .event-item a:hover {
+    color: #333; /* Darker links on hover */
+}
+
+/* Dark Mode Styles (when data-theme="dark" is set) */
+[data-theme="dark"] .todo-list-page .game-section {
+    background-color: #f9f9f9; /* Light background for game tiles */
+    color: #444; /* Dark text */
+    border: 1px solid #ddd; /* Light border */
+}
+
+[data-theme="dark"] .todo-list-page .game-section h2 {
+    color: #333; /* Dark text for game titles */
+    border-bottom: 2px solid #4CAF50;
+}
+
+[data-theme="dark"] .todo-list-page .event-item {
+    background-color: #444; /* Dark background for each event */
+    color: #fff; /* Light text */
+    border: 1px solid #555; /* Dark border */
+}
+
+[data-theme="dark"] .todo-list-page .event-item:hover {
+    background-color: #555; /* Slightly lighter background on hover */
+}
+
+[data-theme="dark"] .todo-list-page .event-details strong {
+    color: #4CAF50; /* Green accent */
+}
+
+[data-theme="dark"] .todo-list-page .event-item a {
+    color: #4CAF50; /* Green links in dark mode */
+}
+
+[data-theme="dark"] .todo-list-page .event-item a:hover {
+    color: #ffffff; /* White links on hover */
+}
+
+/* Add the Game Image styling specific to todo-list-page */
+.todo-list-page .game-image {
+    width: 100%;              /* Ensures image fills container horizontally */
+    height: 200px;            /* Set a fixed height for uniformity */
+    object-fit: contain;      /* Maintains aspect ratio without cropping */
+    background-color: #000;   /* Black background for any extra space */
+    border-radius: 8px;       /* Optional: rounded corners to match tile style */
+}
+
+
+
+/* Responsive: Adjustments for smaller screen sizes */
+@media (max-width: 1024px) {
+    .todo-list-page .game-section {
+        flex: 1 1 45%; /* Make each tile take up 45% width for medium screens */
+        max-width: 400px; /* Adjust max width */
+        min-height: 200px; /* Set a smaller min-height for medium screens */
+    }
+
+    /* Adjust event list container for better responsiveness */
+    .todo-list-page .event-list {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 768px) {
+    .todo-list-page .game-section {
+        flex: 1 1 100%; /* Make each tile take up full width on small screens */
+        max-width: 100%; /* Remove max width */
+    }
+
+    .todo-list-page .main-content {
+        flex-direction: column; /* Stack tiles vertically on small screens */
     }
 }

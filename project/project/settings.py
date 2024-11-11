@@ -14,6 +14,8 @@ import os
 from pathlib import Path
 
 
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -57,6 +59,7 @@ INSTALLED_APPS = [
     'home',
     'bootstrap5',
     'guardian',
+    'django_q',
 ]
 
 # Add support for authenticating users
@@ -100,6 +103,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'project.wsgi.application'
 
 
+Q_CLUSTER = {
+    'name': 'DjangoQ',
+    'workers': 4,
+    'timeout': 60,
+    'retry': 60,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default',  # Use Django's ORM
+}
+
+
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -135,7 +149,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Denver'
 
 USE_I18N = True
 
@@ -148,7 +162,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 #add reference path to static
 STATICFILES_DIRS = [
-os.path.join(BASE_DIR, 'home/static')
+os.path.join(BASE_DIR, 'home/static'),
 ]
 
 # Default primary key field type
@@ -160,3 +174,8 @@ LOGIN_REDIRECT_URL = '/'  # Adjusts prebuilt login path to redirect user to inde
 
 
 LOGOUT_REDIRECT_URL = '/'  # Adjusts prebuilt logout path to redirect user to index page after login
+
+#stuff for image upload
+#https://www.geeksforgeeks.org/python-uploading-images-in-django/
+MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
