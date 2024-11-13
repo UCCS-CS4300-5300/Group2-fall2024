@@ -1,0 +1,35 @@
+Name                                                                                    Stmts   Miss  Cover   Missing
+---------------------------------------------------------------------------------------------------------------------
+home/__init__.py                                                                            0      0   100%
+home/admin.py                                                                               6      0   100%
+home/apps.py                                                                                4      0   100%
+home/forms.py                                                                              78     10    87%   52-56, 61, 69, 130, 134, 138
+home/migrations/0001_initial.py                                                             5      0   100%
+home/migrations/0002_alter_event_options_event_user.py                                      6      0   100%
+home/migrations/0002_event_priority.py                                                      4      0   100%
+home/migrations/0003_game.py                                                                4      0   100%
+home/migrations/0004_event_game.py                                                          5      0   100%
+home/migrations/0005_game_color.py                                                          4      0   100%
+home/migrations/0006_merge_20241027_1858.py                                                 4      0   100%
+home/migrations/0007_friendrequest.py                                                       6      0   100%
+home/migrations/0007_game_picture_link.py                                                   4      0   100%
+home/migrations/0008_event_recurrence_event_recurrence_end.py                               4      0   100%
+home/migrations/0008_friendrequest_accepted_alter_friendrequest_from_user_and_more.py       6      0   100%
+home/migrations/0009_calendaraccess.py                                                      7      0   100%
+home/migrations/0009_game_picture_upload.py                                                 4      0   100%
+home/migrations/0010_alter_game_picture_upload.py                                           4      0   100%
+home/migrations/0011_merge_20241110_1125.py                                                 4      0   100%
+home/migrations/__init__.py                                                                 0      0   100%
+home/models.py                                                                             61      6    90%   75, 142, 165, 173-178, 197
+home/templatetags/__init__.py                                                               0      0   100%
+home/templatetags/template_tags.py                                                         11      3    73%   21-26
+home/tests.py                                                                             210     29    86%   198-199, 205-211, 217-224, 232, 238-240, 246-248, 254-258, 264-266, 292
+home/urls.py                                                                               10      1    90%   95
+home/utils.py                                                                              90     37    59%   137-166, 186-189, 237-249, 270, 282-288
+home/views.py                                                                             473    219    54%   158, 163, 167-179, 232, 235, 257-258, 311-335, 348-353, 398, 445, 453, 458-481, 515-519, 546-548, 572-576, 588-593, 611-625, 643-650, 675, 691-692, 708-749, 765-773, 789-821, 859, 862, 868-870, 884-886, 901-920, 944, 952, 963-967, 982-1016, 1022-1051, 1066-1082, 1126-1129, 1149, 1174, 1178-1179, 1192-1194, 1197-1199, 1202-1205, 1210, 1213-1214, 1217-1218, 1221-1224, 1229-1237, 1240-1241, 1244-1245, 1250-1251, 1254-1256, 1259-1261, 1266-1267, 1270-1272, 1280-1281, 1290-1292, 1295-1297
+manage.py                                                                                  11      2    82%   12-13
+project/__init__.py                                                                         0      0   100%
+project/settings.py                                                                        27      0   100%
+project/urls.py                                                                             3      0   100%
+---------------------------------------------------------------------------------------------------------------------
+TOTAL                                                                                    1055    307    71%

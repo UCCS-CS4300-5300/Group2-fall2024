@@ -32,6 +32,7 @@ from django.utils.http import urlencode
 from django.test import TestCase, Client
 from home.models import Event, Game, FriendRequest, CalendarAccess
 from datetime import datetime, timedelta
+from uuid import uuid4
 from .forms import CustomUserCreationForm, EventForm, GameForm
 import json
 
@@ -577,4 +578,200 @@ class CalendarAccessTests(TestCase):
 
         # Check if the response status is 302 (redirect to the owner's calendar)
         self.assertEqual(response.status_code, 302)
+
+
+class CalendarViewTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username='owner', password='testpass123')
+        self.friend = User.objects.create_user(username='friend', password='testpass123')
+        self.stranger = User.objects.create_user(username='stranger', password='testpass123')
+        FriendRequest.objects.create(from_user=self.owner, to_user=self.friend, accepted=True)
+
+    def test_unauthenticated_user_redirected(self):
+        response = self.client.get(reverse('calendar', args=[self.owner.id]))
+        self.assertRedirects(response, reverse('index'))
+
+    def test_stranger_access_denied(self):
+        self.client.login(username='stranger', password='testpass123')
+        response = self.client.get(reverse('calendar', args=[self.owner.id]))
+        self.assertRedirects(response, reverse('calendar', args=[self.stranger.id]))
+
+    def test_friend_access_granted(self):
+        self.client.login(username='friend', password='testpass123')
+        response = self.client.get(reverse('calendar', args=[self.owner.id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_owner_access_granted(self):
+        self.client.login(username='owner', password='testpass123')
+        response = self.client.get(reverse('calendar', args=[self.owner.id]))
+        self.assertEqual(response.status_code, 200)
+
+
+class EventDetailViewTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username='owner', password='testpass123')
+        self.friend = User.objects.create_user(username='friend', password='testpass123')
+        self.stranger = User.objects.create_user(username='stranger', password='testpass123')
+        FriendRequest.objects.create(from_user=self.owner, to_user=self.friend, accepted=True)
+
+        # Create an event
+        self.event = Event.objects.create(
+            title='Test Event',
+            description='Event Description',
+            start_time=timezone.now(),
+            end_time=timezone.now() + timedelta(hours=1),
+            user=self.owner
+        )
+
+    def test_owner_access_granted(self):
+        self.client.login(username='owner', password='testpass123')
+        response = self.client.get(reverse('event_detail', args=[self.event.id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_friend_access_granted(self):
+        self.client.login(username='friend', password='testpass123')
+        response = self.client.get(reverse('event_detail', args=[self.event.id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_stranger_access_denied(self):
+        self.client.login(username='stranger', password='testpass123')
+        response = self.client.get(reverse('event_detail', args=[self.event.id]))
+        self.assertEqual(response.status_code, 204)
+
+
+class DeleteEventTests(TestCase):
+    def setUp(self):
+        # Users for testing
+        self.owner = User.objects.create_user(username='owner', password='testpass123')
+        self.stranger = User.objects.create_user(username='stranger', password='testpass123')
+        self.user1 = User.objects.create_user(username='user1', password='testpass123')
+        self.user2 = User.objects.create_user(username='user2', password='testpass123')
+        self.client.login(username='owner', password='testpass123')
+        # Set a default user for generic tests
+        self.user = self.owner  # Use self.user for tests expecting this attribute
+
+        # Create a standard event
+        self.event = Event.objects.create(
+            title='Test Event',
+            description='Event Description',
+            start_time=timezone.now(),
+            end_time=timezone.now() + timedelta(hours=1),
+            user=self.owner
+        )
+
+        # Create a recurring event (for recurring event tests)
+        self.recurring_event = Event.objects.create(
+            title='Recurring Event',
+            description='Recurring Event Description',
+            start_time=timezone.now() + timedelta(days=1),
+            end_time=timezone.now() + timedelta(days=1, hours=1),
+            user=self.user,  # The default user
+            recurrence='daily',
+            recurrence_end=timezone.now() + timedelta(days=5)
+        )
+
+    def test_owner_deletes_event(self):
+        self.client.login(username='owner', password='testpass123')
+        response = self.client.post(reverse('delete_event', args=[self.owner.id, self.event.id]))
+        self.assertRedirects(response, reverse('calendar', args=[self.owner.id]))
+        self.assertFalse(Event.objects.filter(id=self.event.id).exists())
+
+    def test_stranger_cannot_delete_event(self):
+        """
+        Test that a user who is not the owner of an event cannot delete it.
+        """
+        self.client.login(username='stranger', password='testpass123')
+        response = self.client.post(reverse('delete_event', args=[self.owner.id, self.event.id]), follow=True)
+
+        # Verify the user is redirected
+        self.assertEqual(response.status_code, 200)
+
+        # Check for the error message in the response context
+        messages = list(response.context['messages'])
+        self.assertTrue(any("You don't have permission to delete this event." in str(msg) for msg in messages))
+
+    def test_unauthenticated_cannot_delete_event(self):
+        """
+        Test that unauthenticated users cannot delete an event.
+        """
+        response = self.client.post(reverse('delete_event', args=[self.owner.id, self.event.id]))
+
+        # Expected redirection to the login page
+        expected_login_url = reverse('login') + f"?next={reverse('delete_event', args=[self.owner.id, self.event.id])}"
+        self.assertRedirects(response, expected_login_url)
+
+
+
+    def test_invalid_event_creation(self):
+        """
+        Test that invalid event data is rejected.
+        """
+        self.client.login(username='testuser', password='testpassword')
+        response = self.client.post(reverse('event_new'), {
+            'title': '',  # Missing title
+            'start_time': '',  # Missing start time
+            'end_time': '',  # Missing end time
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response, 'form', 'title', 'This field is required.')
+
+
+    def test_event_overlap(self):
+        """
+        Test that overlapping events are not allowed.
+        """
+        self.client.login(username='user1', password='testpass123')
+
+        # Create the first event
+        Event.objects.create(
+            title='Event 1',
+            start_time=timezone.now() + timedelta(hours=1),
+            end_time=timezone.now() + timedelta(hours=2),
+            user=self.user1
+        )
+
+        # Try to create an overlapping event
+        response = self.client.post(reverse('event_new'), {
+            'title': 'Event 2',
+            'start_time': (timezone.now() + timedelta(hours=1, minutes=30)).strftime('%Y-%m-%dT%H:%M'),
+            'end_time': (timezone.now() + timedelta(hours=2, minutes=30)).strftime('%Y-%m-%dT%H:%M'),
+        })
+
+        # Check if the response contains the expected error message
+        self.assertContains(response, "This time slot is already booked.", status_code=200)
+
+
+    def test_invalid_calendar_access_token(self):
+        """
+        Test accessing a calendar with an invalid token.
+        """
+        invalid_token = uuid4()  # Generate a valid UUID
+        CalendarAccess.objects.create(user=self.owner, token=invalid_token)  # Save valid token to avoid crashes
+
+        # Pass a different invalid token for the test
+        response = self.client.get(reverse('view_shared_calendar'), {'token': '00000000-0000-0000-0000-000000000000'})
+        self.assertEqual(response.status_code, 404)
+
+
+
+    def test_duplicate_friend_request(self):
+        """
+        Test that duplicate friend requests cannot be sent.
+        """
+        # Create an initial friend request
+        FriendRequest.objects.create(from_user=self.user1, to_user=self.user2)
+
+        # Log in as the sending user
+        self.client.login(username='user1', password='testpass123')
+
+        # Attempt to send another friend request to the same user
+        response = self.client.post(reverse('send_friend_request'), {'user_id': self.user2.id})
+
+        # Check the status code and error message
+        self.assertEqual(response.status_code, 400)  # Expecting a Bad Request response
+        self.assertJSONEqual(
+            response.content.decode('utf-8'),
+            {'success': False, 'message': 'Friend request already sent.'}
+        )
+
 

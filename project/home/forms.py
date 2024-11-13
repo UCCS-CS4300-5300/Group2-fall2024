@@ -137,6 +137,17 @@ class EventForm(ModelForm):
         if recurrence_end and start_time and recurrence_end < start_time.date():
             self.add_error("recurrence_end", "Recurrence end date cannot be before the start date.")
 
+        if start_time and end_time:
+            overlapping_events = Event.objects.filter(
+                user=user,
+                start_time__lt=end_time,
+                end_time__gt=start_time
+            ).exclude(pk=self.instance.pk)
+
+            if overlapping_events.exists():
+                self.add_error(None, "This time slot is already booked.")
+            
+
         return cleaned_data
 
 class GameForm(forms.ModelForm):

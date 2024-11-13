@@ -83,6 +83,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse, QueryDict
 from django.shortcuts import render, get_object_or_404, reverse, redirect
+from django.test import TestCase
 from django.utils.safestring import mark_safe
 from django.utils import timezone
 from django.views import generic
@@ -372,6 +373,10 @@ def event(request, event_id=None):
         instance = get_object_or_404(Event, pk=event_id)
 
     form = EventForm(request.POST or None, instance=instance)
+
+    
+
+
     if request.method == 'POST' and form.is_valid():
         event = form.save(commit=False)
         event.user = request.user  # Assign the current user
@@ -485,37 +490,22 @@ def deleteEvent(request, user_id, id):
     """
     Deletes an event for the specified user.
 
-    Ensures the user has permission to delete the event. If the request method
-    is POST, deletes the event and redirects to the calendar view.
-
-    Args:
-        request (HttpRequest): The incoming HTTP request object.
-        user_id (int): ID of the event owner.
-        id (int): ID of the event to delete.
-
-    Returns:
-        HttpResponse: Redirects to the calendar view or renders the delete confirmation page.
+    Redirect unauthorized users with an appropriate error message.
     """
-
-    #sets the event based on the id from the url
     event = get_object_or_404(Event, pk=id)
 
-    if request.user.has_perm('view_event', event):
-        
+    # Check if the current user has permission to delete the event
+    if request.user != event.user:
+        messages.error(request, "You don't have permission to delete this event.")
+        return redirect('calendar', user_id)  # Redirect unauthorized users to the calendar
 
-        #check the method is as expected
-        if request.method == 'POST':
-            #delete the event using funtion delete()
-            event.delete()
-            # Redirect back to the Calend list page
-            return redirect('calendar', user_id)
+    if request.method == 'POST':
+        event.delete()
+        messages.success(request, "Event deleted successfully.")
+        return redirect('calendar', user_id)
 
-        #pass in the event into the dictionary 
-        context = {'event': event}
-        #go to delete template with this information
-        return render(request, 'delete.html', context)
-
-    return redirect(reverse('event_detail', args=[id]))  # Redirect to a list of games or wherever
+    context = {'event': event}
+    return render(request, 'delete.html', context)
 
 
 # Function to create a new game or edit exisiting
@@ -1183,3 +1173,116 @@ def calendar_access(request):
 
     # Redirect to CalendarView with the owner's user_id
     return redirect('calendar', user_id=calendar_access.user.id)
+
+## Missing Views.py Tests ##
+
+class FriendRequestEdgeCaseTests(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username="user1", password="testpass123")
+        self.user2 = User.objects.create_user(username="user2", password="testpass123")
+        self.client.login(username="user1", password="testpass123")
+
+    def test_send_friend_request_to_self(self):
+        response = self.client.post(reverse("send_friend_request"), {"user_id": self.user1.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("You cannot send a friend request to yourself", response.json()["message"])
+
+    def test_accept_nonexistent_friend_request(self):
+        self.client.login(username="user2", password="testpass123")
+        response = self.client.post(reverse("accept_friend_request"), {"request_id": 999})
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("Friend request not found", response.json()["error"])
+
+
+class CalendarAccessTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="testpass123")
+
+    def test_access_calendar_without_token(self):
+        response = self.client.get(reverse("view_shared_calendar"))
+        self.assertEqual(response.status_code, 404)
+
+    def test_access_calendar_invalid_token(self):
+        response = self.client.get(reverse("view_shared_calendar") + "?token=invalid_token")
+        self.assertEqual(response.status_code, 404)
+
+    def test_access_calendar_valid_token(self):
+        calendar_access = CalendarAccess.objects.create(user=self.user)
+        response = self.client.get(reverse("view_shared_calendar") + f"?token={calendar_access.token}")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(f"/calendar/{self.user.id}", response.url)
+
+
+class EventPermissionTests(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username="user1", password="testpass123")
+        self.user2 = User.objects.create_user(username="user2", password="testpass123")
+        self.event = Event.objects.create(
+            title="Private Event",
+            start_time=timezone.now(),
+            end_time=timezone.now() + timedelta(hours=1),
+            user=self.user1,
+        )
+        self.client.login(username="user2", password="testpass123")
+
+    def test_view_event_without_permission(self):
+        response = self.client.get(reverse("event_detail", args=[self.event.id]))
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_event_without_permission(self):
+        response = self.client.post(reverse("delete_event", args=[self.user2.id, self.event.id]))
+        self.assertEqual(response.status_code, 403)
+
+
+class UserProfileTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="testpass123")
+        self.client.login(username="testuser", password="testpass123")
+
+    def test_update_account_invalid_data(self):
+        response = self.client.post(reverse("update_account"), {"username": ""})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "This field is required.")
+
+    def test_logout_redirect(self):
+        response = self.client.get(reverse("logout"))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("index"))
+
+
+class GameCreationEdgeTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="testpass123")
+        self.client.login(username="testuser", password="testpass123")
+
+    def test_create_game_missing_required_fields(self):
+        response = self.client.post(reverse("create_game"), {"name": ""})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "This field is required.")
+
+
+
+## Missing Utils.py Tests ##
+
+class RecurringEventTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="testpass123")
+        self.event = Event.objects.create(
+            title="Recurring Event",
+            start_time=timezone.make_aware(datetime(2024, 1, 1, 10, 0)),
+            end_time=timezone.make_aware(datetime(2024, 1, 1, 11, 0)),
+            user=self.user,
+            recurrence="daily",
+        )
+
+    def test_no_recurring_events_past_end_date(self):
+        calendar = Calendar(2024, 1)
+        recurring_events = calendar.get_recurring_events(Event.objects.all(), 15)
+        self.assertEqual(recurring_events.count(), 0)
+
+    def test_invalid_date_handling(self):
+        calendar = Calendar(2024, 2)
+        recurring_events = calendar.get_recurring_events(Event.objects.all(), 30)
+        self.assertEqual(recurring_events.count(), 0)
+
+
