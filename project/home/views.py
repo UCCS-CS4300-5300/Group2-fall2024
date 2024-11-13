@@ -1,29 +1,36 @@
-from datetime import datetime, timedelta, date
-from django.shortcuts import render, get_object_or_404, reverse, redirect
-from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.views import generic
-from django.utils.safestring import mark_safe
-import calendar
-from .models import *
-from django.contrib.auth.models import User
-from .utils import *
-from .forms import *
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+"""
+Views for the home application.
+
+This module includes the following functionalities:
+- User authentication (login, logout, registration).
+- Calendar views (monthly and weekly views).
+- Event management (create, edit, delete).
+- Friend request management (send, accept, decline, view friends).
+- AJAX utilities for dynamic frontend interactions.
+"""
+
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout, forms
+from django.contrib.auth import authenticate, login, logout, forms, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
-from guardian.decorators import permission_required_or_403
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
+from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
-from django.utils import timezone
-from collections import OrderedDict
 from django.db.models import Q
-from .forms import CustomPasswordChangeForm
- 
-from django.http import JsonResponse
-from django.http import QueryDict
+from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse, QueryDict
+from django.shortcuts import render, get_object_or_404, reverse, redirect
+from django.utils.safestring import mark_safe
+from django.utils import timezone
+from django.views import generic
+from guardian.decorators import permission_required_or_403
+from collections import OrderedDict
+from datetime import datetime, timedelta, date
+
+from .models import Game, Event, FriendRequest, CalendarAccess
+from .utils import Calendar, CalendarWeek
+from .forms import CustomUserCreationForm, EventForm, GameForm, UsersForm, CustomPasswordChangeForm
+
 import json
+import calendar
 
 
 
@@ -31,15 +38,48 @@ import json
 # Create your views here.
 
 def index(request):
+    """
+    Renders the home page with currently playing games for the authenticated user.
+
+    If the user is logged in, it fetches the games associated with their events
+    and displays them on the home page.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered home page.
+    """
     # Gather games currently associated to user's events to display "currently playing" on the home page. 
     currently_playing_games = Game.objects.filter(events__user=request.user).distinct() if request.user.is_authenticated else None
     return render(request, 'index.html', {'currently_playing_games': currently_playing_games})
 
 class CalendarView(generic.ListView):
+    """
+    Handles the monthly calendar view, displaying user events.
+
+    Attributes:
+        model (Event): The model used for retrieving event data.
+        template_name (str): The template used for rendering the calendar view.
+    """
     model = Event
     template_name = 'calendar.html'
 
     def dispatch(self, request, *args, **kwargs):
+        """
+        Verifies access permissions before handling the request.
+
+        Checks whether the user is authenticated, is the calendar owner, or is a friend
+        of the calendar owner. Also supports token-based access for shared calendars.
+
+        Args:
+            request (HttpRequest): The incoming HTTP request object.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            HttpResponse: Redirects or processes the request.
+        """
         user_id = self.kwargs.get('user_id')
 
         # Check if a token-based session is set, allowing access regardless of authentication
@@ -76,6 +116,18 @@ class CalendarView(generic.ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        """
+        Prepares and provides context data for rendering the calendar view.
+
+        Fetches user events for the specified month, theme preferences, and navigation links
+        for adjacent months. Adds metadata about the calendar owner and friend permissions.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict: Context data for the calendar template.
+        """
         context = super().get_context_data(**kwargs)
 
         # Get the current user from the request
@@ -126,18 +178,45 @@ class CalendarView(generic.ListView):
         return context
 
 def get_date(req_day):
+    """
+    Parses a date string and returns the first day of the month.
+
+    Args:
+        req_day (str): Date string in the format 'YYYY-MM'.
+
+    Returns:
+        datetime.date: The first day of the specified month.
+    """
     if req_day:
         year, month = (int(x) for x in req_day.split('-'))
         return date(year, month, day=1)
     return datetime.today()
 
 def prev_month(d):
+    """
+    Calculates the previous month for navigation.
+
+    Args:
+        d (datetime.date): The current date.
+
+    Returns:
+        str: URL parameter for the previous month in the format 'month=YYYY-MM'.
+    """
     first = d.replace(day=1)
     prev_month = first - timedelta(days=1)
     month = 'month=' + str(prev_month.year) + '-' + str(prev_month.month)
     return month
 
 def next_month(d):
+    """
+    Calculates the next month for navigation.
+
+    Args:
+        d (datetime.date): The current date.
+
+    Returns:
+        str: URL parameter for the next month in the format 'month=YYYY-MM'.
+    """
     days_in_month = calendar.monthrange(d.year, d.month)[1]
     last = d.replace(day=days_in_month)
     next_month = last + timedelta(days=1)
@@ -146,7 +225,23 @@ def next_month(d):
 
 #weekclaendar view
 class CalendarViewWeek(CalendarView):
+    """
+    Handles the weekly calendar view, inheriting from CalendarView.
+
+    Overrides the context data to render events for a weekly period.
+    """
     def get_context_data(self, **kwargs):
+        """
+        Prepares and provides context data for rendering the weekly calendar view.
+
+        Fetches user events for the specified week and navigation links for adjacent weeks.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict: Context data for the weekly calendar template.
+        """
         context = super().get_context_data(**kwargs)
 
         # Get the current user from the request
@@ -193,6 +288,20 @@ def is_friend_calendar(self, user_id):
 
 
 def event(request, event_id=None):
+    """
+    Handles the creation and editing of events.
+
+    If an event ID is provided, it retrieves and updates the event. Otherwise,
+    it creates a new event. Supports recurring events with automatic generation
+    of future occurrences.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+        event_id (int, optional): ID of the event to edit. Defaults to None.
+
+    Returns:
+        HttpResponse: Redirects to the calendar view or renders the event form.
+    """
     instance = Event()
     if event_id:
         instance = get_object_or_404(Event, pk=event_id)
@@ -217,12 +326,18 @@ def event(request, event_id=None):
             # Ensure recurrence_end is a datetime and timezone-aware for comparison
             if recurrence_end:
                 if isinstance(recurrence_end, date) and not isinstance(recurrence_end, datetime):
-                    recurrence_end = timezone.make_aware(datetime.combine(recurrence_end, datetime.min.time()))
+                    # Add one day to ensure the entire recurrence_end day is included
+                    recurrence_end = timezone.make_aware(datetime.combine(recurrence_end + timedelta(days=1), datetime.min.time()))
                 if timezone.is_naive(recurrence_end):
                     recurrence_end = timezone.make_aware(recurrence_end)
 
             # Loop to create recurring events
             while True:
+                # print(f"Current Start: {current_start}, Current End: {current_end}, Recurrence End: {recurrence_end}, Recurrence Type: {recurrence_type}")
+                if recurrence_end and current_start > recurrence_end:
+                    # print(f"Stopping recurrence loop: Current Start {current_start} is past Recurrence End {recurrence_end}")
+                    break
+
                 # Check if we should create a new event
                 overlap_exists = Event.objects.filter(
                     user=event.user,
@@ -232,6 +347,7 @@ def event(request, event_id=None):
 
                 if not overlap_exists:
                     # Create a new event for the recurrence
+                    # print(f"Creating new recurring event: {current_start} to {current_end}")
                     new_event = Event(
                         user=event.user,
                         title=event.title,
@@ -265,9 +381,6 @@ def event(request, event_id=None):
                     current_start = current_start.replace(year=next_year, month=next_month, day=current_day)
                     current_end = current_end.replace(year=next_year, month=next_month, day=current_day)
 
-                # Stop if we reach the end of recurrence
-                if recurrence_end and current_start > recurrence_end:
-                    break
 
         return redirect('calendar', user_id=request.user.id)
 
@@ -304,6 +417,20 @@ def event_detail(request, event_id):
 @login_required(login_url = 'login')
 #method to delete a event for a user
 def deleteEvent(request, user_id, id):
+    """
+    Deletes an event for the specified user.
+
+    Ensures the user has permission to delete the event. If the request method
+    is POST, deletes the event and redirects to the calendar view.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+        user_id (int): ID of the event owner.
+        id (int): ID of the event to delete.
+
+    Returns:
+        HttpResponse: Redirects to the calendar view or renders the delete confirmation page.
+    """
 
     #sets the event based on the id from the url
     event = get_object_or_404(Event, pk=id)
@@ -328,7 +455,19 @@ def deleteEvent(request, user_id, id):
 
 # Function to create a new game or edit exisiting
 def create_game(request, game_id=None):
+    """
+    Handles the creation and editing of games.
 
+    If a game ID is provided, it retrieves and updates the game. Otherwise,
+    it creates a new game.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+        game_id (int, optional): ID of the game to edit. Defaults to None.
+
+    Returns:
+        HttpResponse: Redirects to the calendar view or renders the game form.
+    """
     # Retrieve the game instance if editing, or create a new one if game_id is None
     game = get_object_or_404(Game, id=game_id) if game_id else None
 
@@ -345,6 +484,17 @@ def create_game(request, game_id=None):
 ########### register here ##################################### 
 
 def register(request):  
+    """
+    Handles user registration.
+
+    Displays a registration form and creates a new user upon form submission.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        HttpResponse: Redirects to the login page or renders the registration form.
+    """
     if request.method == 'POST':  
         form = CustomUserCreationForm(request.POST)  
         if form.is_valid():  
@@ -381,6 +531,17 @@ def userPage(request):
 
     ################ login forms################################################### 
 def Login(request):
+    """
+    Handles user login.
+
+    Authenticates the user and logs them in upon valid credentials.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        HttpResponse: Redirects to the home page or renders the login form.
+    """
     if request.method == 'POST':
   
         # AuthenticationForm_can_also_be_used__
@@ -401,6 +562,18 @@ def Login(request):
 ################ Update Password################################################### 
 @login_required
 def update_account(request):
+    """
+    Handles user account updates.
+
+    Displays a form pre-filled with the user's current details and allows 
+    updates to their profile information. 
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        HttpResponse: Redirects to the user profile page or renders the update form.
+    """
     user_form = UsersForm(instance=request.user)
     if request.method == 'POST':
         user_form = UsersForm(request.POST, instance=request.user)
@@ -412,6 +585,17 @@ def update_account(request):
 
 @login_required
 def update_password(request):
+    """
+    Handles user password updates.
+
+    Displays a password change form and updates the user's password upon valid input.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        HttpResponse: Redirects to the user profile page or renders the password update form.
+    """
     if request.method == 'POST':
         form = CustomPasswordChangeForm(user=request.user, data=request.POST)
         if form.is_valid():
@@ -429,11 +613,32 @@ def update_password(request):
 ################ logout ################################################### 
 
 def CustomLogoutView(self, request):
-        logout(request)  # Log the user out
-        return redirect("index")  # Redirect to the home page or your desired URL
+    """
+    Logs out the user and redirects to the home page.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        HttpResponse: Redirects to the home page.
+    """
+    logout(request)  # Log the user out
+    return redirect("index")  # Redirect to the home page or your desired URL
 
 @login_required(login_url='login')
 def todo_list(request):
+    """
+    Displays a to-do list of events for the current day.
+
+    Groups events by associated game and organizes them by the earliest 
+    start time and highest priority.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered to-do list template with event data.
+    """
     current_date = timezone.localtime(timezone.now()).date()
     events = Event.objects.filter(user=request.user, start_time__date=current_date).order_by('game__name', 'start_time', '-priority')
 
@@ -479,6 +684,17 @@ def todo_list(request):
 
 @login_required
 def friends(request):
+    """
+    Displays a list of users for searching and sending friend requests.
+
+    Handles user search queries submitted via POST.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered social view with search results.
+    """
     # Initialize the list of users to be empty
     users = []
     
@@ -492,6 +708,18 @@ def friends(request):
 
 @login_required
 def ajax_search(request):
+    """
+    Handles AJAX requests for searching users.
+
+    Returns a JSON response with a list of users and their friendship status
+    relative to the logged-in user.
+
+    Args:
+        request (HttpRequest): The incoming AJAX request object.
+
+    Returns:
+        JsonResponse: A JSON object containing user search results and statuses.
+    """
     try:
         query = request.GET.get('query', '').strip()
         results = []
@@ -529,6 +757,15 @@ def ajax_search(request):
 @login_required
 # View to handle sending friend requests
 def send_friend_request(request):
+    """
+    Sends a friend request to another user.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        JsonResponse: A success or error message.
+    """
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
         if user_id:
@@ -568,6 +805,15 @@ def send_friend_request(request):
 
 @login_required
 def view_friend_requests(request):
+    """
+    Displays all pending friend requests for the logged-in user.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered friend request view.
+    """
     # Get all friend requests that are sent to the current user and not accepted
     pending_requests = FriendRequest.objects.filter(to_user=request.user, accepted=False)
 
@@ -575,6 +821,17 @@ def view_friend_requests(request):
 
 @login_required
 def ajax_friend_requests(request):
+    """
+    Handles AJAX requests to fetch pending friend requests.
+
+    Returns a JSON response with details about the pending requests for the logged-in user.
+
+    Args:
+        request (HttpRequest): The incoming AJAX request object.
+
+    Returns:
+        JsonResponse: A JSON object containing a list of pending friend requests.
+    """
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         # Retrieve friend requests for the logged-in user
         friend_requests = FriendRequest.objects.filter(to_user=request.user, accepted=False)
@@ -598,8 +855,17 @@ def ajax_friend_requests(request):
 
 @login_required
 def accept_friend_request(request):
+    """
+    Accepts a friend request sent to the logged-in user.
 
+    Marks the request as accepted and adds the sender to the user's friend list.
 
+    Args:
+        request (HttpRequest): The incoming AJAX POST request object.
+
+    Returns:
+        JsonResponse: A JSON object indicating success or failure.
+    """
 
     if request.method == 'POST':
         
@@ -636,6 +902,17 @@ def accept_friend_request(request):
 
 @login_required
 def decline_friend_request(request):
+    """
+    Declines a friend request sent to the logged-in user.
+
+    Deletes the friend request without adding the sender to the user's friend list.
+
+    Args:
+        request (HttpRequest): The incoming AJAX POST request object.
+
+    Returns:
+        JsonResponse: A JSON object indicating success or failure.
+    """
     if request.method == 'POST':
         
         try:
@@ -709,6 +986,17 @@ def ajax_view_friends(request):
     
 @login_required
 def view_friends(request):
+    """
+    Displays a list of the user's current friends.
+
+    Fetches accepted friend requests and lists the associated users.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered friends list template.
+    """
     user = request.user
 
     # Fetch all accepted friend requests for the current user
@@ -729,6 +1017,17 @@ def view_friends(request):
 
 @login_required
 def delete_friend(request):
+    """
+    Deletes a friend from the user's friend list.
+
+    Checks for an existing friendship and removes it upon confirmation.
+
+    Args:
+        request (HttpRequest): The incoming AJAX request object.
+
+    Returns:
+        JsonResponse: A JSON object indicating success or failure.
+    """
     try:
         
         user = request.user
@@ -765,6 +1064,17 @@ def delete_friend(request):
 
 @login_required
 def generate_calendar_link(request):
+    """
+    Generates a unique, shareable link for the user's calendar.
+
+    Allows the logged-in user to share their calendar with others via a unique token.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        JsonResponse: A JSON object containing the shareable link or an error message.
+    """
     user_id = request.GET.get('owner_id')
     user = User.objects.get(id=user_id)
     
@@ -780,6 +1090,17 @@ def generate_calendar_link(request):
     return JsonResponse({'success': True, 'share_link': share_link})
 
 def calendar_access(request):
+    """
+    Handles access to a shared calendar via a unique token.
+
+    Sets a session variable to grant access and redirects to the calendar view.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object.
+
+    Returns:
+        HttpResponse: Redirects to the calendar view for the owner of the token.
+    """
     token = request.GET.get('token')
     
 
