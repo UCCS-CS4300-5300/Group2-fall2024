@@ -1,4 +1,48 @@
-# home/utils.py 
+"""
+utils.py
+
+This module provides utility classes and functions to enhance the functionality of the Home application.
+
+Features:
+    - **Calendar Class**:
+        - Renders HTML calendars for monthly and weekly views.
+        - Supports event rendering with recurring events (daily, weekly, monthly).
+        - Events are color-coded based on associated games.
+
+    - **Event Recurrence**:
+        - Retrieves and formats recurring events for a specific day.
+        - Handles edge cases such as invalid dates (e.g., February 30).
+
+    - **Token Generation and Validation**:
+        - Generates secure tokens for sharing user calendars.
+        - Validates tokens to ensure access security.
+
+Classes:
+    - `Calendar`: Renders a monthly HTML calendar with events.
+    - `CalendarWeek`: Extends `Calendar` to render a single week.
+    
+Functions:
+    - `generate_user_token(user_id)`: Generates a secure token for user-based operations.
+    - `validate_user_token(token)`: Validates and retrieves a user ID from a token.
+
+Notes:
+    - Relies on the `Event` model for event-related functionalities.
+    - Utilizes Django's `signing` module for secure token handling.
+    - Includes robust handling of recurring events and edge cases.
+
+Examples:
+    - Generate a calendar:
+        ```
+        cal = Calendar(2024, 1)
+        html_calendar = cal.formatmonth(events)
+        ```
+
+    - Generate and validate tokens:
+        ```
+        token = generate_user_token(user_id)
+        user_id = validate_user_token(token)
+        ```
+"""
 
 from datetime import datetime, timedelta
 from calendar import HTMLCalendar, monthrange

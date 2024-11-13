@@ -1,12 +1,30 @@
+"""
+forms.py
+
+This module contains custom form classes used throughout the application. The forms are designed for user registration,
+authentication, password management, event creation and management, and game creation. They extend Django's built-in 
+form classes and provide custom validation logic to ensure the integrity of submitted data.
+
+Classes:
+    - CustomUserCreationForm: A custom user registration form with extended validation for unique usernames and emails.
+    - EventForm: A form for creating or updating events, including support for recurring events.
+    - GameForm: A form for creating or updating games with optional fields for genre, platform, and other metadata.
+    - UsersForm: A form for updating basic user information, such as username, first and last name, and email.
+    - CustomPasswordChangeForm: A custom password change form with validation to ensure the new passwords match.
+
+Usage:
+    These forms can be used in views to handle user input for registration, login, event management, and other 
+    features, ensuring validation and consistent data entry across the application.
+"""
 from django import forms
-from django.forms import ModelForm, DateInput
-from .models import Event, Game
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.core.exceptions import ValidationError  
-from django.forms.fields import EmailField  
 from django.forms.forms import Form  
-from django.contrib.auth.forms import PasswordChangeForm
+from django.forms import ModelForm, DateInput
+from django.forms.fields import EmailField  
+from .models import Event, Game
+ 
 
 
 class CustomUserCreationForm(UserCreationForm):

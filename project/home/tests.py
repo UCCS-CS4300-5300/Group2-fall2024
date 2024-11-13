@@ -1,25 +1,44 @@
-from django.urls import reverse
-from django.utils import timezone
-from django.test import TestCase, Client
-from home.models import Event, Game, FriendRequest, CalendarAccess
+"""
+tests.py
+
+This module contains comprehensive unit and integration tests for the Home application. The tests are designed to verify the 
+functionality, edge cases, and reliability of the application. 
+
+Tests included:
+    - User authentication (e.g., login, registration, password update).
+    - Event management (e.g., creation, editing, deletion, and recurrence handling).
+    - Calendar functionalities (e.g., calendar view, sharing, and token-based access).
+    - Friend request management (e.g., sending, accepting, and removing friends).
+    - Game management (e.g., creating and associating games with events).
+
+Features:
+    - Ensures proper view rendering and template usage.
+    - Verifies form validation and error handling.
+    - Validates model interactions, relationships, and properties.
+    - Tests asynchronous and token-based functionalities, such as calendar sharing.
+
+Setup:
+    - Each test uses Django's TestCase class, which provides database isolation for test reliability.
+    - Test data is set up in the `setUp` method for each test case.
+    - Tear down happens automatically to ensure no residual data affects other tests.
+"""
+
 from django.contrib.auth.models import User
-from datetime import datetime, timedelta
-from .forms import CustomUserCreationForm, EventForm, GameForm
 from django.contrib.messages import get_messages
 from django.db.models import Q
+from django.urls import reverse
+from django.utils import timezone
 from django.utils.http import urlencode
+from django.test import TestCase, Client
+from home.models import Event, Game, FriendRequest, CalendarAccess
+from datetime import datetime, timedelta
+from .forms import CustomUserCreationForm, EventForm, GameForm
 import json
 
 
-"""
-Tests for the Home application.
 
-This module contains unit tests and integration tests for views, models, forms, and utilities 
-within the home application. The tests cover:
-- Views for user authentication, event management, and calendar functionalities.
-- Form validation and edge cases.
-- Friend request and calendar sharing functionalities.
-"""
+
+
 
 # ======================= UNIT TESTS ======================= #
 

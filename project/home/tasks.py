@@ -1,10 +1,33 @@
-# tasks.py
-import os
-from django.utils import timezone
+"""
+tasks.py
+
+This module contains background tasks for asynchronous operations in the application. These tasks are managed by Django Q and
+are executed in the background to handle time-consuming operations, such as sending email reminders.
+
+Tasks:
+    - send_event_reminders: Sends reminder emails to users for events scheduled for the current day.
+    - send_email_task: Sends an email using the SendGrid email client.
+
+Features:
+    - Retrieves events for the current day and sends email reminders asynchronously.
+    - Utilizes Django Q's `async_task` to queue tasks for background execution.
+    - Integrates with the SendGrid API for email delivery.
+
+Notes:
+    - The `SENDGRID_API_KEY` environment variable must be set and accessible by the application.
+    - The `Event` model is assumed to have a `user` attribute with an associated email address.
+    - Designed for daily execution, but can be extended for more granular scheduling as needed.
+"""
+
 from datetime import datetime, timedelta
 from django_q.tasks import async_task
-from .models import Event  # Import your Event model
+from django.utils import timezone
+import os
 from project.sendgrid_client import send_email  # Import the SendGrid email client
+from .models import Event  # Import your Event model
+
+
+
 
 def send_event_reminders():
     """

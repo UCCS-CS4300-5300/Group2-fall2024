@@ -1,8 +1,27 @@
+"""
+models.py
+
+This module contains the database models used in the application. The models define the structure of the application's
+data and include methods for interacting with the database.
+
+Models:
+    - Game: Represents a game in the system, including details like name, genre, platform, and associated images.
+    - Event: Represents an event in the system, including its details, recurrence patterns, and associations with users and games.
+    - FriendRequest: Represents a friend request between users, supporting accepted and pending requests.
+    - CalendarAccess: Represents a token-based system to share access to a user's calendar.
+
+Features:
+    - Supports recurring events (daily, weekly, monthly) with an optional end date.
+    - Provides permission-based access to events using the `guardian` library.
+    - Manages relationships between users through friend requests.
+    - Enables calendar sharing via unique tokens.
+"""
+
 from django.db import models
-from django.shortcuts import reverse
+from django.db.models import Q
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.shortcuts import reverse
 from guardian.shortcuts import assign_perm
 import uuid
 

@@ -1,12 +1,77 @@
 """
-Views for the home application.
+views.py
 
-This module includes the following functionalities:
-- User authentication (login, logout, registration).
-- Calendar views (monthly and weekly views).
-- Event management (create, edit, delete).
-- Friend request management (send, accept, decline, view friends).
-- AJAX utilities for dynamic frontend interactions.
+Views for the Home application.
+
+This module includes functionalities for:
+- **User Authentication**:
+    - Login, Logout, and Registration.
+    - Password and account management.
+
+- **Calendar Management**:
+    - Monthly and Weekly Calendar Views.
+    - Event creation, editing, deletion, and detailed view.
+    - Handling recurring events and sharing calendars via tokens.
+
+- **Friendship Management**:
+    - Sending, accepting, declining, and deleting friend requests.
+    - Viewing friends and managing friend lists.
+
+- **AJAX Utilities**:
+    - Dynamic user search.
+    - Fetching and responding to friend requests asynchronously.
+    - Generating and validating calendar sharing links.
+
+Features:
+    - Permission-based access control for events and calendars.
+    - Token-based calendar sharing for secure access.
+    - Rich event recurrence handling (daily, weekly, monthly).
+    - Interactive to-do lists grouped by associated games.
+    - Dynamic UI interactions using AJAX endpoints.
+
+Classes:
+    - `CalendarView`: Handles monthly calendar views with event rendering.
+    - `CalendarViewWeek`: Extends `CalendarView` to handle weekly views.
+
+Functions:
+    - `index`: Home page displaying currently playing games.
+    - `event`: Handles event creation and editing.
+    - `event_detail`: Provides a detailed view of an event.
+    - `deleteEvent`: Deletes events for authenticated users.
+    - `create_game`: Handles game creation and editing.
+    - `register`: User registration.
+    - `Login`: User login.
+    - `update_account`: User profile updates.
+    - `update_password`: Handles password updates.
+    - `friends`: Displays friend lists and search functionalities.
+    - `ajax_search`: AJAX endpoint for user search.
+    - `send_friend_request`: Sends a friend request.
+    - `view_friend_requests`: Displays pending friend requests.
+    - `accept_friend_request`: Accepts a friend request.
+    - `decline_friend_request`: Declines a friend request.
+    - `generate_calendar_link`: Generates a shareable calendar link.
+    - `calendar_access`: Provides calendar access via token.
+
+Notes:
+    - Relies on models like `Event`, `Game`, `FriendRequest`, and `CalendarAccess`.
+    - Utilizes custom forms such as `EventForm`, `GameForm`, and `CustomPasswordChangeForm`.
+    - Includes utility methods for managing recurring events and navigation between calendar views.
+
+Examples:
+    - **Create an Event**:
+        ```
+        response = client.post(reverse('event_new'), {
+            'title': 'New Event',
+            'start_time': '2024-01-01T10:00',
+            'end_time': '2024-01-01T11:00',
+            'recurrence': 'daily',
+        })
+        ```
+
+    - **Generate a Calendar Link**:
+        ```
+        share_link = generate_calendar_link(request)
+        ```
 """
 
 from django.contrib import messages
