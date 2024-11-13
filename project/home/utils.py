@@ -1,26 +1,90 @@
-# home/utils.py 
+"""
+utils.py
+
+This module provides utility classes and functions to enhance the functionality of the Home application.
+
+Features:
+    - **Calendar Class**:
+        - Renders HTML calendars for monthly and weekly views.
+        - Supports event rendering with recurring events (daily, weekly, monthly).
+        - Events are color-coded based on associated games.
+
+    - **Event Recurrence**:
+        - Retrieves and formats recurring events for a specific day.
+        - Handles edge cases such as invalid dates (e.g., February 30).
+
+    - **Token Generation and Validation**:
+        - Generates secure tokens for sharing user calendars.
+        - Validates tokens to ensure access security.
+
+Classes:
+    - `Calendar`: Renders a monthly HTML calendar with events.
+    - `CalendarWeek`: Extends `Calendar` to render a single week.
+    
+Functions:
+    - `generate_user_token(user_id)`: Generates a secure token for user-based operations.
+    - `validate_user_token(token)`: Validates and retrieves a user ID from a token.
+
+Notes:
+    - Relies on the `Event` model for event-related functionalities.
+    - Utilizes Django's `signing` module for secure token handling.
+    - Includes robust handling of recurring events and edge cases.
+
+Examples:
+    - Generate a calendar:
+        ```
+        cal = Calendar(2024, 1)
+        html_calendar = cal.formatmonth(events)
+        ```
+
+    - Generate and validate tokens:
+        ```
+        token = generate_user_token(user_id)
+        user_id = validate_user_token(token)
+        ```
+"""
 
 from datetime import datetime, timedelta
-from calendar import HTMLCalendar
-from .models import Event
-
-from .templatetags.template_tags import *
-from django.urls import reverse
 from calendar import HTMLCalendar, monthrange
-from django.contrib.auth.models import User
-
-from django.core import signing
+from .models import Event
+from .templatetags.template_tags import *
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.core import signing
+from django.urls import reverse
 from django.utils import timezone
 
 class Calendar(HTMLCalendar):
+    """
+    Calendar class to render a monthly HTML calendar.
+
+    This class formats days, weeks, and months with event data and supports
+    recurring events.
+    """
     def __init__(self, year=None, month=None):
+        """
+        Initialize the Calendar instance.
+
+        Args:
+            year (int): Year to display in the calendar.
+            month (int): Month to display in the calendar.
+        """
         self.year = year
         self.month = month
         super(Calendar, self).__init__()
 
     # Formats a day as a td
     def formatday(self, day, events):
+        """
+        Formats a single day cell in the calendar with events.
+
+        Args:
+            day (int): Day of the month.
+            events (QuerySet): QuerySet of Event objects for the month.
+
+        Returns:
+            str: HTML string representing the day's events.
+        """
         events_per_day = events.filter(start_time__day=day)
 
         # Check for recurring events
@@ -47,6 +111,16 @@ class Calendar(HTMLCalendar):
     ##################### Recurring Events ############################
    
     def get_recurring_events(self, events, day):
+        """
+        Retrieves recurring events for a specific day.
+
+        Args:
+            events (QuerySet): QuerySet of Event objects.
+            day (int): Day of the month.
+
+        Returns:
+            QuerySet: QuerySet of recurring Event objects for the given day.
+        """
         recurring_events_list = []  # Temporary list to hold recurring events for this day
 
         # Validate the day
@@ -59,44 +133,56 @@ class Calendar(HTMLCalendar):
 
         for event in events:
             if event.recurrence != 'none':
+                # Ensure start_date is initialized
                 start_date = event.start_time.date()
                 recurrence_end = event.recurrence_end or current_date
+
+                # print(f"Event: {event.title}, Start Date: {start_date}, Recurrence End: {recurrence_end}, Current Date: {current_date}, Recurrence: {event.recurrence}")
 
                 # Ensure the event's recurrence period includes the current date
                 if start_date <= current_date <= recurrence_end:
                     if event.recurrence == 'daily':
+                        # print(f"Adding daily event: {event.title} on {current_date}")
                         # Daily events appear every day within the range
                         recurring_events_list.append(event)
 
                     elif event.recurrence == 'weekly':
-                        # Explicitly calculate the recurrence dates for weekly events
-                        weekly_occurrence = start_date
-                        while weekly_occurrence <= recurrence_end:
-                            if weekly_occurrence == current_date:
-                                recurring_events_list.append(event)
-                                break
-                            weekly_occurrence += timedelta(weeks=1)
+                        # Check if the current date matches the weekly recurrence
+                        delta_days = (current_date - start_date).days
+                        if delta_days % 7 == 0:
+                            # print(f"Adding weekly event: {event.title} on {current_date}")
+                            recurring_events_list.append(event)
 
                     elif event.recurrence == 'monthly':
-                        # Explicitly calculate the recurrence dates for monthly events
-                        monthly_occurrence = start_date
-                        while monthly_occurrence <= recurrence_end:
-                            if monthly_occurrence == current_date:
-                                recurring_events_list.append(event)
-                                break
-                            # Move to the next month while keeping the day the same
-                            if monthly_occurrence.month == 12:
-                                monthly_occurrence = monthly_occurrence.replace(year=monthly_occurrence.year + 1, month=1)
-                            else:
-                                monthly_occurrence = monthly_occurrence.replace(month=monthly_occurrence.month + 1)
+                        # Check if the current date matches the monthly recurrence
+                        month_diff = (current_date.year - start_date.year) * 12 + (current_date.month - start_date.month)
+                        if month_diff >= 0:
+                            # print(f"Adding monthly event: {event.title} on {current_date}")
+                            # Handle months where the start_date.day might not exist
+                            try:
+                                if current_date.day == start_date.day:
+                                    recurring_events_list.append(event)
+                            except ValueError:
+                                pass  # Skip invalid days (e.g., February 30)
 
-        # Convert list to QuerySet with `in_bulk` to ensure no duplicates
+        # Convert list to QuerySet with `id__in` to ensure no duplicates
         recurring_events_ids = [event.id for event in recurring_events_list]
-        recurring_events = Event.objects.filter(id__in=recurring_events_ids)
+        return Event.objects.filter(id__in=recurring_events_ids)
 
-        return recurring_events
+
+
     # Formats a week as a tr 
     def formatweek(self, theweek, events):
+        """
+        Formats a single week as a row in the calendar.
+
+        Args:
+            theweek (list): List of (day, weekday) tuples for the week.
+            events (QuerySet): QuerySet of Event objects.
+
+        Returns:
+            str: HTML string representing the week.
+        """
         week = ''
         for d, weekday in theweek:
             week += self.formatday(d, events)
@@ -104,6 +190,16 @@ class Calendar(HTMLCalendar):
 
     # Formats a month as a table
     def formatmonth(self, events, withyear=True):
+        """
+        Formats the entire month as an HTML table.
+
+        Args:
+            events (QuerySet): QuerySet of Event objects for the month.
+            withyear (bool): Whether to display the year in the month name.
+
+        Returns:
+            str: HTML string representing the month.
+        """
         # Start creating the HTML table for the month
         self.events = events  # Store events to access within `formatday`
         month_html = f'<table border="0" cellpadding="0" cellspacing="0" class="calendar">\n'
@@ -122,7 +218,22 @@ class Calendar(HTMLCalendar):
 
 #shows only 1 week without messing up the rest of the month
 class CalendarWeek(Calendar):
+    """
+    CalendarWeek class for rendering a single week from the calendar.
+
+    Inherits from the Calendar class.
+    """
     def formatmonth(self, withyear=True, user_id=None):
+        """
+        Formats a single week of the month as an HTML table.
+
+        Args:
+            withyear (bool): Whether to display the year in the month name.
+            user_id (int): ID of the user for fetching events.
+
+        Returns:
+            str: HTML string representing the week.
+        """
         user = User.objects.get(id=user_id)
 
         # Fetch all events for the user as a QuerySet
@@ -146,10 +257,28 @@ class CalendarWeek(Calendar):
         return cal
 
 def generate_user_token(user_id):
+    """
+    Generates a secure token for a user.
+
+    Args:
+        user_id (int): ID of the user.
+
+    Returns:
+        str: A signed token containing the user ID.
+    """
     # Sign the user_id to generate a secure token
     return signing.dumps({'user_id': user_id})
 
 def validate_user_token(token):
+    """
+    Validates a user token and retrieves the user ID.
+
+    Args:
+        token (str): The signed token.
+
+    Returns:
+        int or None: The user ID if valid, or None if invalid.
+    """
     try:
         # Unsign the token to retrieve the user_id
         data = signing.loads(token)
