@@ -18,3 +18,5 @@ coverage==7.6.4
 pillow==11.0.0
 flake8-django
 mutmut
+pytest
+pytest-django
