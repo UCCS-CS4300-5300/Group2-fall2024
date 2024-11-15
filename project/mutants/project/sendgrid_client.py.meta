@@ -1,0 +1,21 @@
+{
+    "exit_code_by_key": {
+        "project.sendgrid_client.x_send_email__mutmut_1": null,
+        "project.sendgrid_client.x_send_email__mutmut_2": null,
+        "project.sendgrid_client.x_send_email__mutmut_3": null,
+        "project.sendgrid_client.x_send_email__mutmut_4": null,
+        "project.sendgrid_client.x_send_email__mutmut_5": null,
+        "project.sendgrid_client.x_send_email__mutmut_6": null,
+        "project.sendgrid_client.x_send_email__mutmut_7": null,
+        "project.sendgrid_client.x_send_email__mutmut_8": null,
+        "project.sendgrid_client.x_send_email__mutmut_9": null,
+        "project.sendgrid_client.x_send_email__mutmut_10": null,
+        "project.sendgrid_client.x_send_email__mutmut_11": null,
+        "project.sendgrid_client.x_send_email__mutmut_12": null,
+        "project.sendgrid_client.x_send_email__mutmut_13": null,
+        "project.sendgrid_client.x_send_email__mutmut_14": null
+    },
+    "hash_by_function_name": {
+        "send_email": "67b8e275f4256554ddcc9ef97b10fd27"
+    }
+}
