@@ -372,10 +372,7 @@ def event(request, event_id=None):
     if event_id:
         instance = get_object_or_404(Event, pk=event_id)
 
-    form = EventForm(request.POST or None, instance=instance)
-
-    
-
+    form = EventForm(request.POST or None, instance=instance, user=request.user)
 
     if request.method == 'POST' and form.is_valid():
         event = form.save(commit=False)
