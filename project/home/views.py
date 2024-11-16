@@ -509,6 +509,7 @@ def deleteEvent(request, user_id, id):
 
 
 # Function to create a new game or edit exisiting
+@login_required
 def create_game(request, game_id=None):
     """
     Handles the creation and editing of games.
@@ -524,13 +525,15 @@ def create_game(request, game_id=None):
         HttpResponse: Redirects to the calendar view or renders the game form.
     """
     # Retrieve the game instance if editing, or create a new one if game_id is None
-    game = get_object_or_404(Game, id=game_id) if game_id else None
+    game = get_object_or_404(Game, id=game_id, user=request.user) if game_id else None
 
     if request.method == 'POST':
         form = GameForm(request.POST, request.FILES, instance=game)
         if form.is_valid():
-            form.save()
-            return redirect(reverse('calendar', args=[request.user.id]))  # Redirect to a list of games or wherever
+            game = form.save(commit=False)
+            game.user = request.user
+            game.save()
+            return redirect(reverse('calendar', args=[request.user.id]))  # Redirect to the calendar
     else:
         form = GameForm(instance=game)
 
