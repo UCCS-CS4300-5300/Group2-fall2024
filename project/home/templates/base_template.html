@@ -11,6 +11,7 @@
     <!-- Used bootstrap to make sure sticky navigation bar with game-logo on the left and routes to other pages -->
     <link rel="stylesheet" href="{% static 'styles-v2.css' %}">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <title>
         {% block title %}Homepage
@@ -48,14 +49,15 @@
                             <li class="nav-item"><a class="nav-link" href="{% url 'login' %}?next={{ request.path }}">Login</a></li>
                         {%endif%}
 
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" id="themeToggleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Theme
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="themeToggleDropdown">
-                                <button id="theme-toggle" class="dropdown-item" onclick="toggleTheme()">Dark/Light Mode</button>
+                        <!-- Theme Toggle -->
+                        <li class="nav-item">
+                            <div class="form-check form-switch d-flex align-items-center">
+                                <input class="form-check-input d-none" type="checkbox" id="theme-toggle" onchange="toggleTheme()">
+                                <label class="form-check-label m-0" for="theme-toggle">
+                                    <span id="theme-icon" class="material-icons" style="cursor: pointer;">light_mode</span>
+                                </label>
                             </div>
-                        </li>
+                        </li> 
                     </ul>
                 
                 
@@ -95,6 +97,10 @@
         // Toggle the theme
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         body.setAttribute('data-theme', newTheme);
+
+        // Update the icon
+        const themeIcon = document.getElementById('theme-icon');
+        themeIcon.textContent = newTheme === 'dark' ? 'light_mode' : 'brightness_2'; // Bright moon for light mode
         
         // Save preference to localStorage
         localStorage.setItem('theme', newTheme);
@@ -104,6 +110,10 @@
     document.addEventListener('DOMContentLoaded', () => {
         const savedTheme = localStorage.getItem('theme') || 'light'; // Default to light
         document.body.setAttribute('data-theme', savedTheme);
+
+        // Set the toggle icon based on the saved theme
+        const themeIcon = document.getElementById('theme-icon');
+        themeIcon.textContent = savedTheme === 'dark' ? 'light_mode' : 'brightness_2'; // Bright moon for light mode
     });
 
 
@@ -118,6 +128,38 @@
     body[data-theme='dark'] {
         background-color: #000000; /* Dark background */
         color: #ffffff; /* Light text */
+    }
+
+    #theme-icon {
+        font-size: 1.5em;
+        color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+    }
+
+    .form-check.form-switch {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        justify-content: center;
+        padding: 0;
+        height: 100%;
+    }
+
+    .nav-item .form-check-label {
+        margin: 0;
+    }
+
+    .navbar-nav .nav-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar {
+        min-height: 56pxx;
     }
 
     
