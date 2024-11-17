@@ -107,7 +107,8 @@ class EventForm(ModelForm):
     
     def __init__(self, *args, **kwargs):
         """
-        Initialize the form and configure input formats for datetime fields.
+        Initialize the form, filter the game field for current user,
+        and configure input formats for datetime fields.
         """
         self.user = kwargs.pop('user', None)
         super(EventForm, self).__init__(*args, **kwargs)
@@ -170,7 +171,9 @@ class GameForm(forms.ModelForm):
     """
     class Meta:
         model = Game
+        # User field should be set automatically
         fields = '__all__'
+        exclude = ['user']
         widgets = {
             'release_date': forms.DateInput(attrs={'type': 'date', 'placeholder': 'Optional'}),
             'genre': forms.TextInput(attrs={'placeholder': 'Optional'}),

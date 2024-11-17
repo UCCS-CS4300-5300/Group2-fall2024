@@ -16,3 +16,7 @@ DateTime==5.5
 coverage==7.6.4
 #this is for getting pillow , not sure if it is capitalized or not
 pillow==11.0.0
+flake8-django
+mutmut
+pytest
+pytest-django

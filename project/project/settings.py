@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+import warnings
 from pathlib import Path
 
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="pkg_resources")
 
 
 
@@ -179,3 +181,4 @@ LOGOUT_REDIRECT_URL = '/'  # Adjusts prebuilt logout path to redirect user to in
 #https://www.geeksforgeeks.org/python-uploading-images-in-django/
 MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+

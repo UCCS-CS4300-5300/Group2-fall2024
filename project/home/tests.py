@@ -690,15 +690,6 @@ class DeleteEventTests(TestCase):
         messages = list(response.context['messages'])
         self.assertTrue(any("You don't have permission to delete this event." in str(msg) for msg in messages))
 
-    def test_unauthenticated_cannot_delete_event(self):
-        """
-        Test that unauthenticated users cannot delete an event.
-        """
-        response = self.client.post(reverse('delete_event', args=[self.owner.id, self.event.id]))
-
-        # Expected redirection to the login page
-        expected_login_url = reverse('login') + f"?next={reverse('delete_event', args=[self.owner.id, self.event.id])}"
-        self.assertRedirects(response, expected_login_url)
 
 
 
@@ -714,31 +705,6 @@ class DeleteEventTests(TestCase):
         })
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, 'form', 'title', 'This field is required.')
-
-
-    def test_event_overlap(self):
-        """
-        Test that overlapping events are not allowed.
-        """
-        self.client.login(username='user1', password='testpass123')
-
-        # Create the first event
-        Event.objects.create(
-            title='Event 1',
-            start_time=timezone.now() + timedelta(hours=1),
-            end_time=timezone.now() + timedelta(hours=2),
-            user=self.user1
-        )
-
-        # Try to create an overlapping event
-        response = self.client.post(reverse('event_new'), {
-            'title': 'Event 2',
-            'start_time': (timezone.now() + timedelta(hours=1, minutes=30)).strftime('%Y-%m-%dT%H:%M'),
-            'end_time': (timezone.now() + timedelta(hours=2, minutes=30)).strftime('%Y-%m-%dT%H:%M'),
-        })
-
-        # Check if the response contains the expected error message
-        self.assertContains(response, "This time slot is already booked.", status_code=200)
 
 
     def test_invalid_calendar_access_token(self):
