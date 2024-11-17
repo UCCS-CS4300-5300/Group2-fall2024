@@ -81,7 +81,7 @@ from collections import OrderedDict
 from datetime import datetime, timedelta, date
 
 from .models import Game, Event, FriendRequest, CalendarAccess
-from .utils import Calendar, CalendarWeek
+from .utils import Calendar
 from .forms import CustomUserCreationForm, EventForm, GameForm, UsersForm, CustomPasswordChangeForm
 
 import json
