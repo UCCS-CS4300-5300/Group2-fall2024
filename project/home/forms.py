@@ -109,7 +109,13 @@ class EventForm(ModelForm):
         """
         Initialize the form and configure input formats for datetime fields.
         """
+        self.user = kwargs.pop('user', None)
         super(EventForm, self).__init__(*args, **kwargs)
+
+        # Filter the game queryset to only include the user's games
+        if self.user:
+            self.fields['game'].queryset = Game.objects.filter(user=self.user)
+            
         # input_formats to parse HTML5 datetime-local input to datetime field
         self.fields['start_time'].input_formats = ('%Y-%m-%dT%H:%M',)
         self.fields['end_time'].input_formats = ('%Y-%m-%dT%H:%M',)
@@ -139,7 +145,7 @@ class EventForm(ModelForm):
 
         if start_time and end_time:
             overlapping_events = Event.objects.filter(
-                user=user,
+                user=self.user,
                 start_time__lt=end_time,
                 end_time__gt=start_time
             ).exclude(pk=self.instance.pk)
