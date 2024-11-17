@@ -107,10 +107,16 @@ class EventForm(ModelForm):
     
     def __init__(self, *args, **kwargs):
         """
-        Initialize the form and configure input formats for datetime fields.
+        Initialize the form, filter the game field for current user,
+        and configure input formats for datetime fields.
         """
         self.user = kwargs.pop('user', None)
         super(EventForm, self).__init__(*args, **kwargs)
+
+        # Filter the game queryset to only include the user's games
+        if self.user:
+            self.fields['game'].queryset = Game.objects.filter(user=self.user)
+            
         # input_formats to parse HTML5 datetime-local input to datetime field
         self.fields['start_time'].input_formats = ('%Y-%m-%dT%H:%M',)
         self.fields['end_time'].input_formats = ('%Y-%m-%dT%H:%M',)
@@ -165,7 +171,9 @@ class GameForm(forms.ModelForm):
     """
     class Meta:
         model = Game
+        # User field should be set automatically
         fields = '__all__'
+        exclude = ['user']
         widgets = {
             'release_date': forms.DateInput(attrs={'type': 'date', 'placeholder': 'Optional'}),
             'genre': forms.TextInput(attrs={'placeholder': 'Optional'}),

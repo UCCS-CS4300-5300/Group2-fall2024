@@ -30,7 +30,7 @@ import uuid
 # Game model
 class Game(models.Model):
     """
-    Represents a game in the system.
+    Represents a game unique to each user.
 
     Attributes:
         name (str): Name of the game.
@@ -41,6 +41,7 @@ class Game(models.Model):
         color (str): Color code associated with the game (e.g., for UI purposes).
         picture_link (str): URL to the game's image (optional).
         picture_upload (ImageField): Optional uploaded image for the game.
+        user (User): The user who owns this game instance. 
     """
     PLATFORM_CHOICES = [
         ('PC', 'PC'),
@@ -64,6 +65,7 @@ class Game(models.Model):
     release_date = models.DateField(blank=True, null=True)
     color = models.CharField(max_length=7, choices=COLOR_CHOICES, default='#FFFFFF')  # Set default color
     picture_link = models.CharField(max_length=1000, blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='games')
     
     #adding in this so peopel can upload pictures
     picture_upload = models.ImageField(blank=True, null=True)
