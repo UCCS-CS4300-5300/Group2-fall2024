@@ -6,9 +6,7 @@ New Event
 {% endblock %}
 
 {% block content %}
-<div class="clearfix">
-  <a class="btn btn-info left" href="{% url 'calendar' user.id%}"> Calendar </a>
-</div>
+
 <link rel="stylesheet" type="text/css" href="{% static 'calendar/styles.css' %}">
 
 {% if form.errors %}
