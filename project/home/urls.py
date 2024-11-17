@@ -1,42 +1,15 @@
-"""
-urls.py
-
-This module defines the URL patterns for the Home application. It maps views and functionalities to their respective routes 
-to ensure proper navigation and interaction within the application.
-
-Routes included:
-    - Authentication: Handles login, logout, registration, account updates, and password updates.
-    - Calendar: Provides calendar views (monthly, weekly) and event management (create, edit, delete, detail view).
-    - Games: Allows for game creation, editing, and association with events.
-    - Friend Requests: Includes functionalities for sending, accepting, declining, and managing friend requests.
-    - Calendar Sharing: Implements token-based calendar sharing and access.
-    - Search: Provides endpoints for standard and AJAX-based user and friend searches.
-    - Media: Configures media handling for image uploads during development.
-
-Features:
-    - Integrates Django's built-in authentication system.
-    - Implements custom views for extended functionalities, such as custom logout and user registration.
-    - Supports dynamic routes with user IDs, event IDs, and game IDs for specific operations.
-
-Setup:
-    - Uses Django's `path` and `re_path` utilities for URL mapping.
-    - Includes static file handling for development environments using `settings.MEDIA_URL` and `settings.MEDIA_ROOT`.
-
-Notes:
-    - All AJAX endpoints are clearly labeled to distinguish them from standard views.
-    - Routes are modular and intuitive to support easy navigation and future scalability.
-"""
-
+from django.urls import path, re_path, include
 from . import views
 from .views import *
-from .forms import CustomPasswordChangeForm, CustomUserCreationForm, EventForm, Game, UsersForm
+from django.contrib.auth import views as auth
+from .forms import *
+
+#stuff for image upload
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib.auth import views as auth
-from django.urls import path, re_path, include
 
 
-
+from django.conf import settings
 
 
 
@@ -55,7 +28,6 @@ urlpatterns = [
     path('accounts/update_account/', views.update_account, name = "update_account"),
     
     path('calendar/<int:user_id>/', CalendarView.as_view(), name = 'calendar' ),
-    path('calendarweek/<int:user_id>', CalendarViewWeek.as_view(), name = 'calendarweek' ),
     re_path(r'^event/new/$', views.event, name='event_new'),
     re_path(r'^event/edit/(?P<event_id>\d+)/$', views.event, name='event_edit'),
     
