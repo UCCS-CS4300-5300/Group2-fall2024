@@ -1,22 +1,17 @@
 """
 utils.py
-
 This module provides utility classes and functions to enhance the functionality of the Home application.
-
 Features:
     - **Calendar Class**:
         - Renders HTML calendars for monthly and weekly views.
         - Supports event rendering with recurring events (daily, weekly, monthly).
         - Events are color-coded based on associated games.
-
     - **Event Recurrence**:
         - Retrieves and formats recurring events for a specific day.
         - Handles edge cases such as invalid dates (e.g., February 30).
-
     - **Token Generation and Validation**:
         - Generates secure tokens for sharing user calendars.
         - Validates tokens to ensure access security.
-
 Classes:
     - `Calendar`: Renders a monthly HTML calendar with events.
     - `CalendarWeek`: Extends `Calendar` to render a single week.
@@ -24,19 +19,16 @@ Classes:
 Functions:
     - `generate_user_token(user_id)`: Generates a secure token for user-based operations.
     - `validate_user_token(token)`: Validates and retrieves a user ID from a token.
-
 Notes:
     - Relies on the `Event` model for event-related functionalities.
     - Utilizes Django's `signing` module for secure token handling.
     - Includes robust handling of recurring events and edge cases.
-
 Examples:
     - Generate a calendar:
         ```
         cal = Calendar(2024, 1)
         html_calendar = cal.formatmonth(events)
         ```
-
     - Generate and validate tokens:
         ```
         token = generate_user_token(user_id)
@@ -45,26 +37,24 @@ Examples:
 """
 
 from datetime import datetime, timedelta
-from calendar import HTMLCalendar, monthrange
 from .models import Event
 from .templatetags.template_tags import *
-from django.conf import settings
+from django.urls import reverse
+from calendar import HTMLCalendar, monthrange
 from django.contrib.auth.models import User
 from django.core import signing
-from django.urls import reverse
+from django.conf import settings
 from django.utils import timezone
 
 class Calendar(HTMLCalendar):
     """
     Calendar class to render a monthly HTML calendar.
-
     This class formats days, weeks, and months with event data and supports
     recurring events.
     """
     def __init__(self, year=None, month=None):
         """
         Initialize the Calendar instance.
-
         Args:
             year (int): Year to display in the calendar.
             month (int): Month to display in the calendar.
@@ -77,11 +67,9 @@ class Calendar(HTMLCalendar):
     def formatday(self, day, events):
         """
         Formats a single day cell in the calendar with events.
-
         Args:
             day (int): Day of the month.
             events (QuerySet): QuerySet of Event objects for the month.
-
         Returns:
             str: HTML string representing the day's events.
         """
@@ -113,11 +101,9 @@ class Calendar(HTMLCalendar):
     def get_recurring_events(self, events, day):
         """
         Retrieves recurring events for a specific day.
-
         Args:
             events (QuerySet): QuerySet of Event objects.
             day (int): Day of the month.
-
         Returns:
             QuerySet: QuerySet of recurring Event objects for the given day.
         """
@@ -137,12 +123,9 @@ class Calendar(HTMLCalendar):
                 start_date = event.start_time.date()
                 recurrence_end = event.recurrence_end or current_date
 
-                # print(f"Event: {event.title}, Start Date: {start_date}, Recurrence End: {recurrence_end}, Current Date: {current_date}, Recurrence: {event.recurrence}")
-
                 # Ensure the event's recurrence period includes the current date
                 if start_date <= current_date <= recurrence_end:
                     if event.recurrence == 'daily':
-                        # print(f"Adding daily event: {event.title} on {current_date}")
                         # Daily events appear every day within the range
                         recurring_events_list.append(event)
 
@@ -165,21 +148,17 @@ class Calendar(HTMLCalendar):
                             except ValueError:
                                 pass  # Skip invalid days (e.g., February 30)
 
-        # Convert list to QuerySet with `id__in` to ensure no duplicates
+
+        # Convert list to QuerySet with `in_bulk` to ensure no duplicates
         recurring_events_ids = [event.id for event in recurring_events_list]
         return Event.objects.filter(id__in=recurring_events_ids)
-
-
-
     # Formats a week as a tr 
     def formatweek(self, theweek, events):
         """
         Formats a single week as a row in the calendar.
-
         Args:
             theweek (list): List of (day, weekday) tuples for the week.
             events (QuerySet): QuerySet of Event objects.
-
         Returns:
             str: HTML string representing the week.
         """
@@ -192,11 +171,9 @@ class Calendar(HTMLCalendar):
     def formatmonth(self, events, withyear=True):
         """
         Formats the entire month as an HTML table.
-
         Args:
             events (QuerySet): QuerySet of Event objects for the month.
             withyear (bool): Whether to display the year in the month name.
-
         Returns:
             str: HTML string representing the month.
         """
@@ -216,53 +193,11 @@ class Calendar(HTMLCalendar):
         month_html += '</table>'
         return month_html
 
-#shows only 1 week without messing up the rest of the month
-class CalendarWeek(Calendar):
-    """
-    CalendarWeek class for rendering a single week from the calendar.
-
-    Inherits from the Calendar class.
-    """
-    def formatmonth(self, withyear=True, user_id=None):
-        """
-        Formats a single week of the month as an HTML table.
-
-        Args:
-            withyear (bool): Whether to display the year in the month name.
-            user_id (int): ID of the user for fetching events.
-
-        Returns:
-            str: HTML string representing the week.
-        """
-        user = User.objects.get(id=user_id)
-
-        # Fetch all events for the user as a QuerySet
-        events = Event.objects.filter(user=user_id, start_time__month=self.month, start_time__year=self.year)
-
-        cal = f'<table border="0" cellpadding="0" cellspacing="0" class="calendar">\n'
-        cal += f'{self.formatmonthname(self.year, self.month, withyear=withyear)}\n'
-        cal += f'{self.formatweekheader()}\n'
-        for week in self.monthdays2calendar(self.year, self.month):
-            cal += f'{self.formatweek(week, events)}\n'
-            break
-        cal += f'</table>\n'
-        return cal
-
-        cal = f'<table border="0" cellpadding="0" cellspacing="0" class="calendar">\n'
-        cal += f'{self.formatmonthname(self.year, self.month, withyear=withyear)}\n'
-        cal += f'{self.formatweekheader()}\n'
-        for week in self.monthdays2calendar(self.year, self.month):
-            cal += f'{self.formatweek(week, events)}\n'
-        cal += f'</table>\n'
-        return cal
-
 def generate_user_token(user_id):
     """
     Generates a secure token for a user.
-
     Args:
         user_id (int): ID of the user.
-
     Returns:
         str: A signed token containing the user ID.
     """
@@ -272,10 +207,8 @@ def generate_user_token(user_id):
 def validate_user_token(token):
     """
     Validates a user token and retrieves the user ID.
-
     Args:
         token (str): The signed token.
-
     Returns:
         int or None: The user ID if valid, or None if invalid.
     """
