@@ -2,19 +2,58 @@
 {% block title %}Update Account{% endblock %}
 
 {% block content %}
+<!-- Main container to center content -->
 <div class="container mt-5">
+    <!-- Center the form horizontally -->
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <!-- Ensure responsiveness by setting column width -->
+        <div class="col-lg-5">
             <h3 class="text-center mb-4">Update Account Information</h3>
+            <!-- Form container -->
             <form method="POST" class="border p-4 rounded shadow-sm">
+                <!-- Django CSRF token for security -->
                 {% csrf_token %}
-                {{ user_form.as_p }}
+                
+                <!-- Add class for responsive form layout -->
+                <div class="form-group">
+                    <!-- Render user form with Django -->
+                    {{ user_form.as_p }}
+                </div>
+
+                <!-- Buttons aligned for responsiveness -->
                 <div class="d-flex justify-content-between mt-3">
-                    <a href="{% url 'user_page' %}" class="btn btn-secondary">Back to Profile</a>
-                    <button class="btn btn-primary" type="submit">Save Changes</button>
+                    <a href="{% url 'user_page' %}" class="btn">Back to Profile</a>
+                    <button class="btn" type="submit">Save Changes</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+<style>
+    .form-group textarea {
+    width: 100%;  /* Ensure fields take the full width */
+    margin-bottom: 15px;  /* Space between form elements */
+    }
+
+    /* Ensures buttons and other elements adjust on small screens */
+    @media (max-width: 1200px) {
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+    }
+    
+    .d-flex {
+        flex-direction: column; /* Stack the buttons on small screens */
+        align-items: stretch;  /* Ensure buttons stretch across the screen */
+    }
+
+    .d-flex a,
+    .d-flex button {
+        width: 100%;  /* Make buttons take full width on small screens */
+        margin-bottom: 10px;  /* Space between buttons */
+    }
+}
+
+</style>
 {% endblock %}

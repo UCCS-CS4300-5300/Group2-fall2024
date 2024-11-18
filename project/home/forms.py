@@ -24,7 +24,7 @@ from django.forms.forms import Form
 from django.forms import ModelForm, DateInput
 from django.forms.fields import EmailField  
 from .models import Event, Game
- 
+
 
 
 class CustomUserCreationForm(UserCreationForm):
