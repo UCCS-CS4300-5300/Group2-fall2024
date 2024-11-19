@@ -148,14 +148,15 @@ class EventForm(ModelForm):
             overlapping_events = Event.objects.filter(
                 user=self.user,
                 start_time__lt=end_time,
-                end_time__gt=start_time
+                end_time__gt=start_time,
+                recurrence='none'  # Exclude recurring events as they generate virtual instances
             ).exclude(pk=self.instance.pk)
 
             if overlapping_events.exists():
                 self.add_error(None, "This time slot is already booked.")
-            
 
         return cleaned_data
+
 
 class GameForm(forms.ModelForm):
     """

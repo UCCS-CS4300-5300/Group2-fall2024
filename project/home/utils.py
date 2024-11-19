@@ -36,7 +36,7 @@ Examples:
         ```
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from .models import Event
 from .templatetags.template_tags import *
 from django.urls import reverse
@@ -45,6 +45,7 @@ from django.contrib.auth.models import User
 from django.core import signing
 from django.conf import settings
 from django.utils import timezone
+from django.db.models import Q, F
 
 class Calendar(HTMLCalendar):
     """
@@ -73,13 +74,20 @@ class Calendar(HTMLCalendar):
         Returns:
             str: HTML string representing the day's events.
         """
+        print(f"DEBUG: Generating HTML for day={day}")
+        print(f"DEBUG: Events passed to formatday={events}")
         events_per_day = events.filter(start_time__day=day)
+        print(f"DEBUG: Events for {day}: {list(events_per_day.values('title', 'start_time'))}")
 
         # Check for recurring events
         recurring_events = self.get_recurring_events(events, day)
 
         # Combine events and recurring events
         all_events = events_per_day | recurring_events  # Use | for QuerySet union
+        all_events = all_events.filter(Q(recurrence_end__isnull=True) | Q(start_time__lte=F('recurrence_end')))
+        print(f"DEBUG: Filtered events for {day}: {list(all_events.values('title', 'start_time'))}")
+        print(f"DEBUG: All events for {day}: {list(all_events.values('title', 'start_time'))}")
+
 
         # Sort events by priority (higher priority first)
         sorted_events = all_events.order_by('-priority')
@@ -97,7 +105,7 @@ class Calendar(HTMLCalendar):
         return '<td></td>'
 
     ##################### Recurring Events ############################
-   
+    
     def get_recurring_events(self, events, day):
         """
         Retrieves recurring events for a specific day.
@@ -107,51 +115,56 @@ class Calendar(HTMLCalendar):
         Returns:
             QuerySet: QuerySet of recurring Event objects for the given day.
         """
-        recurring_events_list = []  # Temporary list to hold recurring events for this day
+        recurring_events_list = []
 
-        # Validate the day
-        max_day = monthrange(self.year, self.month)[1]  # Get the max days in the month
-        if day < 1 or day > max_day:  # Check if the day is valid
+        max_day = monthrange(self.year, self.month)[1]
+        if day < 1 or day > max_day:
             return Event.objects.none()
 
-        # Create the current date for the given day in the current calendar
         current_date = datetime(self.year, self.month, day).date()
 
         for event in events:
             if event.recurrence != 'none':
-                # Ensure start_date is initialized
                 start_date = event.start_time.date()
                 recurrence_end = event.recurrence_end or current_date
 
-                # Ensure the event's recurrence period includes the current date
-                if start_date <= current_date <= recurrence_end:
-                    if event.recurrence == 'daily':
-                        # Daily events appear every day within the range
+                # Ensure recurrence_end is properly validated
+                if isinstance(recurrence_end, datetime):
+                    recurrence_end = recurrence_end.date()
+
+                # Debug: Check event details
+                print(f"DEBUG: Checking event {event.title}")
+                print(f"DEBUG: Event start_date={start_date}, recurrence_end={recurrence_end}, current_date={current_date}")
+
+                # Check if the event falls within the recurrence range
+                if not (start_date <= current_date <= recurrence_end):
+                    print(f"DEBUG: Skipping event {event.title}, out of range.")
+                    continue
+
+                if event.recurrence == 'daily':
+                    recurring_events_list.append(event)
+
+                elif event.recurrence == 'weekly':
+                    delta_days = (current_date - start_date).days
+                    if delta_days % 7 == 0:
                         recurring_events_list.append(event)
 
-                    elif event.recurrence == 'weekly':
-                        # Check if the current date matches the weekly recurrence
-                        delta_days = (current_date - start_date).days
-                        if delta_days % 7 == 0:
-                            # print(f"Adding weekly event: {event.title} on {current_date}")
+                elif event.recurrence == 'monthly':
+                    # Calculate the difference in months between the current date and the start date
+                    month_diff = (current_date.year - start_date.year) * 12 + (current_date.month - start_date.month)
+                    
+                    # Ensure the event recurs on the correct day and avoid invalid dates
+                    try:
+                        if month_diff >= 0 and current_date.day == start_date.day:
                             recurring_events_list.append(event)
+                    except ValueError:
+                        pass  # Skip invalid days (e.g., February 30 for an event starting on January 30)
 
-                    elif event.recurrence == 'monthly':
-                        # Check if the current date matches the monthly recurrence
-                        month_diff = (current_date.year - start_date.year) * 12 + (current_date.month - start_date.month)
-                        if month_diff >= 0:
-                            # print(f"Adding monthly event: {event.title} on {current_date}")
-                            # Handle months where the start_date.day might not exist
-                            try:
-                                if current_date.day == start_date.day:
-                                    recurring_events_list.append(event)
-                            except ValueError:
-                                pass  # Skip invalid days (e.g., February 30)
-
-
-        # Convert list to QuerySet with `in_bulk` to ensure no duplicates
+        # Filter to remove any events that fall outside their recurrence_end
         recurring_events_ids = [event.id for event in recurring_events_list]
         return Event.objects.filter(id__in=recurring_events_ids)
+
+
     # Formats a week as a tr 
     def formatweek(self, theweek, events):
         """

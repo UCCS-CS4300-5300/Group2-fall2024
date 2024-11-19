@@ -69,7 +69,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q
+from django.db.models import Q, F
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse, QueryDict
 from django.shortcuts import render, get_object_or_404, reverse, redirect
 from django.test import TestCase
@@ -181,6 +181,9 @@ class CalendarView(generic.ListView):
         # use today's date for the calendar
         d = get_date(self.request.GET.get('month', None))
 
+        print(f"DEBUG: Generating calendar for year={d.year}, month={d.month}")
+
+
         # Get user-specific information about theme
         current_theme = self.request.COOKIES.get('theme', 'light')  # Default to 'light'
 
@@ -191,16 +194,26 @@ class CalendarView(generic.ListView):
         events = Event.objects.filter(
             Q(user_id=user_id),
             Q(start_time__year=d.year, start_time__month=d.month) |
-            Q(recurrence__in=['daily', 'weekly', 'monthly'], start_time__date__lte=d)
-        )
+            Q(recurrence__in=['daily', 'weekly', 'monthly'], start_time__date__lte=d),
+            Q(recurrence_end__isnull=True) | Q(recurrence_end__gte=d)  # Exclude events with past recurrence_end
+)
+
+        print("DEBUG: All events retrieved:", list(events.values("id", "title", "start_time", "recurrence", "recurrence_end")))
+
 
         # Generate the calendar HTML with events
         html_cal = cal.formatmonth(events=events, withyear=True)
         context['calendar'] = mark_safe(html_cal)
 
+        print("DEBUG: Calendar HTML snippet:")
+        print(html_cal[:500])  # Print the first 500 characters of the HTML for brevity
+
         # Get adjacent months for navigation
         context['prev_month'] = prev_month(d)
         context['next_month'] = next_month(d)
+
+        print(f"DEBUG: Previous month: {context['prev_month']}, Next month: {context['next_month']}")
+
 
         # Add theme
         context['current_theme'] = current_theme
@@ -219,6 +232,9 @@ class CalendarView(generic.ListView):
         
 
         context['owner'] = get_object_or_404(User, pk=user_id)
+
+        print(f"DEBUG: Calendar owned by User ID {user_id}. Is friend calendar: {context['is_friend_calendar']}")
+
 
         return context
 
@@ -287,11 +303,6 @@ def event(request, event_id=None):
     If an event ID is provided, it retrieves and updates the event. Otherwise,
     it creates a new event. Supports recurring events with automatic generation
     of future occurrences.
-    Args:
-        request (HttpRequest): The incoming HTTP request object.
-        event_id (int, optional): ID of the event to edit. Defaults to None.
-    Returns:
-        HttpResponse: Redirects to the calendar view or renders the event form.
     """
     instance = Event()
     if event_id:
@@ -308,49 +319,62 @@ def event(request, event_id=None):
         if recurrence_type != 'none':
             current_start = event.start_time
             current_end = event.end_time
-            recurrence_end = form.cleaned_data.get('recurrence_end')
+            recurrence_end = form.cleaned_data.get('recurrence_end')  # Retrieve from form
 
-            # Ensure current_start and current_end are timezone-aware
-            current_start = timezone.make_aware(current_start) if timezone.is_naive(current_start) else current_start
-            current_end = timezone.make_aware(current_end) if timezone.is_naive(current_end) else current_end
+            # Apply the fallback and timezone-awareness handling
+            if not recurrence_end:
+                recurrence_end = timezone.now() + timedelta(days=365)  # Default to 1 year from now
 
-            # Ensure recurrence_end is a datetime and timezone-aware for comparison
-            if recurrence_end:
-                if isinstance(recurrence_end, date) and not isinstance(recurrence_end, datetime):
-                    recurrence_end = timezone.make_aware(datetime.combine(recurrence_end + timedelta(days=1), datetime.min.time()))
-                if timezone.is_naive(recurrence_end):
-                    recurrence_end = timezone.make_aware(recurrence_end)
+            # Ensure all datetime values are in the same timezone
+            if isinstance(recurrence_end, date) and not isinstance(recurrence_end, datetime):
+                recurrence_end = timezone.make_aware(
+                    datetime.combine(recurrence_end, datetime.min.time())
+                )
+            if timezone.is_naive(recurrence_end):
+                recurrence_end = timezone.make_aware(recurrence_end)
+
+            current_start = timezone.localtime(current_start)
+            current_end = timezone.localtime(current_end)
+            recurrence_end = timezone.localtime(recurrence_end)
 
             # Loop to create recurring events
-            while True:
-                if recurrence_end and current_start > recurrence_end:
+            while current_start <= recurrence_end:
+                # Debug start of the loop
+                print(f"DEBUG: Start of loop - current_start={current_start}, recurrence_end={recurrence_end}")
+
+                # Stop if the next iteration exceeds recurrence_end
+                if current_start > recurrence_end or current_end > recurrence_end:
+                    print(f"DEBUG: Skipping event creation - current_start={current_start}, current_end={current_end}, exceeds recurrence_end={recurrence_end}")
                     break
-                # Check if we should create a new event
-                overlap_exists = Event.objects.filter(
-                    user=event.user,
-                    start_time__lt=current_end,
-                    end_time__gt=current_start,
-                ).exists()
 
-                if not overlap_exists:
-                    # Create a new event for the recurrence
-                    new_event = Event(
+                # Check again before saving the event (final safeguard)
+                if current_start <= recurrence_end and current_end <= recurrence_end:
+                    print(f"DEBUG: Saving event - current_start={current_start}, current_end={current_end}")
+                    overlap_exists = Event.objects.filter(
                         user=event.user,
-                        title=event.title,
-                        description=event.description,
-                        start_time=current_start,
-                        end_time=current_end,
-                        recurrence='none'  # Set recurrence to none for created events
-                    )
-                    new_event.save()
+                        start_time__lt=current_end,
+                        end_time__gt=current_start,
+                    ).exists()
 
-                # Update start and end times based on recurrence type
+                    if not overlap_exists:
+                        # Create a new event for the recurrence
+                        new_event = Event(
+                            user=event.user,
+                            title=event.title,
+                            description=event.description,
+                            start_time=current_start,
+                            end_time=current_end,
+                            recurrence='none'  # Set recurrence to none for created events
+                        )
+                        new_event.save()
+
+                # Pre-calculate the next start and end times based on recurrence type
                 if recurrence_type == 'daily':
-                    current_start += timedelta(days=1)
-                    current_end += timedelta(days=1)
+                    next_start = current_start + timedelta(days=1)
+                    next_end = current_end + timedelta(days=1)
                 elif recurrence_type == 'weekly':
-                    current_start += timedelta(weeks=1)
-                    current_end += timedelta(weeks=1)
+                    next_start = current_start + timedelta(weeks=1)
+                    next_end = current_end + timedelta(weeks=1)
                 elif recurrence_type == 'monthly':
                     # Move to the next month and ensure valid day
                     next_month = (current_start.month % 12) + 1
@@ -360,17 +384,24 @@ def event(request, event_id=None):
                     last_day_next_month = get_last_day_of_month(next_year, next_month)
 
                     # Adjust the current day if it exceeds the last day of the next month
-                    current_day = current_start.day
-                    if current_day > last_day_next_month:
-                        current_day = last_day_next_month
-                    
-                    current_start = current_start.replace(year=next_year, month=next_month, day=current_day)
-                    current_end = current_end.replace(year=next_year, month=next_month, day=current_day)
+                    next_day = current_start.day
+                    if next_day > last_day_next_month:
+                        next_day = last_day_next_month
 
+                    next_start = current_start.replace(year=next_year, month=next_month, day=next_day)
+                    next_end = current_end.replace(year=next_year, month=next_month, day=next_day)
+
+                # Debug after increment
+                print(f"DEBUG: After increment - next_start={next_start}, next_end={next_end}")
+
+                # Update current_start and current_end for the next iteration
+                current_start = next_start
+                current_end = next_end
 
         return redirect('calendar', user_id=request.user.id)
 
     return render(request, 'event.html', {'form': form, 'event_id': event_id})
+
 
 # Function to return the detailed view of a specific event
 def event_detail(request, event_id):
