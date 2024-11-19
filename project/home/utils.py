@@ -74,10 +74,10 @@ class Calendar(HTMLCalendar):
         Returns:
             str: HTML string representing the day's events.
         """
-        print(f"DEBUG: Generating HTML for day={day}")
-        print(f"DEBUG: Events passed to formatday={events}")
+        # print(f"DEBUG: Generating HTML for day={day}")
+        # print(f"DEBUG: Events passed to formatday={events}")
         events_per_day = events.filter(start_time__day=day)
-        print(f"DEBUG: Events for {day}: {list(events_per_day.values('title', 'start_time'))}")
+        # print(f"DEBUG: Events for {day}: {list(events_per_day.values('title', 'start_time'))}")
 
         # Check for recurring events
         recurring_events = self.get_recurring_events(events, day)
@@ -85,8 +85,8 @@ class Calendar(HTMLCalendar):
         # Combine events and recurring events
         all_events = events_per_day | recurring_events  # Use | for QuerySet union
         all_events = all_events.filter(Q(recurrence_end__isnull=True) | Q(start_time__lte=F('recurrence_end')))
-        print(f"DEBUG: Filtered events for {day}: {list(all_events.values('title', 'start_time'))}")
-        print(f"DEBUG: All events for {day}: {list(all_events.values('title', 'start_time'))}")
+        # print(f"DEBUG: Filtered events for {day}: {list(all_events.values('title', 'start_time'))}")
+        # print(f"DEBUG: All events for {day}: {list(all_events.values('title', 'start_time'))}")
 
 
         # Sort events by priority (higher priority first)
@@ -133,12 +133,12 @@ class Calendar(HTMLCalendar):
                     recurrence_end = recurrence_end.date()
 
                 # Debug: Check event details
-                print(f"DEBUG: Checking event {event.title}")
-                print(f"DEBUG: Event start_date={start_date}, recurrence_end={recurrence_end}, current_date={current_date}")
+                # print(f"DEBUG: Checking event {event.title}")
+                # print(f"DEBUG: Event start_date={start_date}, recurrence_end={recurrence_end}, current_date={current_date}")
 
                 # Check if the event falls within the recurrence range
                 if not (start_date <= current_date <= recurrence_end):
-                    print(f"DEBUG: Skipping event {event.title}, out of range.")
+                    # print(f"DEBUG: Skipping event {event.title}, out of range.")
                     continue
 
                 if event.recurrence == 'daily':

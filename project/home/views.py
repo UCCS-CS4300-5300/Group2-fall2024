@@ -181,7 +181,7 @@ class CalendarView(generic.ListView):
         # use today's date for the calendar
         d = get_date(self.request.GET.get('month', None))
 
-        print(f"DEBUG: Generating calendar for year={d.year}, month={d.month}")
+        # print(f"DEBUG: Generating calendar for year={d.year}, month={d.month}")
 
 
         # Get user-specific information about theme
@@ -198,21 +198,21 @@ class CalendarView(generic.ListView):
             Q(recurrence_end__isnull=True) | Q(recurrence_end__gte=d)  # Exclude events with past recurrence_end
 )
 
-        print("DEBUG: All events retrieved:", list(events.values("id", "title", "start_time", "recurrence", "recurrence_end")))
+        # print("DEBUG: All events retrieved:", list(events.values("id", "title", "start_time", "recurrence", "recurrence_end")))
 
 
         # Generate the calendar HTML with events
         html_cal = cal.formatmonth(events=events, withyear=True)
         context['calendar'] = mark_safe(html_cal)
 
-        print("DEBUG: Calendar HTML snippet:")
-        print(html_cal[:500])  # Print the first 500 characters of the HTML for brevity
+        # print("DEBUG: Calendar HTML snippet:")
+        # print(html_cal[:500])  # Print the first 500 characters of the HTML for brevity
 
         # Get adjacent months for navigation
         context['prev_month'] = prev_month(d)
         context['next_month'] = next_month(d)
 
-        print(f"DEBUG: Previous month: {context['prev_month']}, Next month: {context['next_month']}")
+        # print(f"DEBUG: Previous month: {context['prev_month']}, Next month: {context['next_month']}")
 
 
         # Add theme
@@ -233,7 +233,7 @@ class CalendarView(generic.ListView):
 
         context['owner'] = get_object_or_404(User, pk=user_id)
 
-        print(f"DEBUG: Calendar owned by User ID {user_id}. Is friend calendar: {context['is_friend_calendar']}")
+        # print(f"DEBUG: Calendar owned by User ID {user_id}. Is friend calendar: {context['is_friend_calendar']}")
 
 
         return context
@@ -340,16 +340,16 @@ def event(request, event_id=None):
             # Loop to create recurring events
             while current_start <= recurrence_end:
                 # Debug start of the loop
-                print(f"DEBUG: Start of loop - current_start={current_start}, recurrence_end={recurrence_end}")
+                # print(f"DEBUG: Start of loop - current_start={current_start}, recurrence_end={recurrence_end}")
 
                 # Stop if the next iteration exceeds recurrence_end
                 if current_start > recurrence_end or current_end > recurrence_end:
-                    print(f"DEBUG: Skipping event creation - current_start={current_start}, current_end={current_end}, exceeds recurrence_end={recurrence_end}")
+                    # print(f"DEBUG: Skipping event creation - current_start={current_start}, current_end={current_end}, exceeds recurrence_end={recurrence_end}")
                     break
 
                 # Check again before saving the event (final safeguard)
                 if current_start <= recurrence_end and current_end <= recurrence_end:
-                    print(f"DEBUG: Saving event - current_start={current_start}, current_end={current_end}")
+                    # print(f"DEBUG: Saving event - current_start={current_start}, current_end={current_end}")
                     overlap_exists = Event.objects.filter(
                         user=event.user,
                         start_time__lt=current_end,
@@ -392,7 +392,7 @@ def event(request, event_id=None):
                     next_end = current_end.replace(year=next_year, month=next_month, day=next_day)
 
                 # Debug after increment
-                print(f"DEBUG: After increment - next_start={next_start}, next_end={next_end}")
+                # print(f"DEBUG: After increment - next_start={next_start}, next_end={next_end}")
 
                 # Update current_start and current_end for the next iteration
                 current_start = next_start
