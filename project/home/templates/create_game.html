@@ -12,7 +12,7 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
-        <a class="btn mt-3" href="{% url 'calendar' user.id%}">Back to Calendar</a>
+        <a class="btn mt-3" href="{% url 'game_list'%}">Back to Game List</a>
         <button type="submit" class="btn mt-3">
             {% if form.instance.id %}Update Game{% else %}Create Game{% endif %}
         </button>

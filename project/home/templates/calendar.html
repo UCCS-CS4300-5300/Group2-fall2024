@@ -47,7 +47,7 @@
                 {% if user.is_authenticated %}
                   <div class="d-flex flex-column flex-md-row w-100">
                     <a class="btn left mb-2 mb-md-0" href="{% url 'calendar' owner.id %}?{{ prev_month }}{% if request.GET.token %}&token={{ request.GET.token }}{% endif %}"> <--Previous Month </a>
-                    <a class="btn left mb-2 mb-md-0 ml-md-2" href="{% url 'create_game' %}">Add a New Game</a>
+                    <a class="btn left mb-2 mb-md-0 ml-md-2" href="{% url 'game_list' %}">View Your Games</a>
                     <a class="btn left mb-2 mb-md-0 ml-md-2 justify-content-start" href="{% url 'friends' %}">
                       <i class="fas fa-user-friends"></i>
                     </a>

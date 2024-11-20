@@ -486,7 +486,35 @@ def create_game(request, game_id=None):
         form = GameForm(instance=game)
 
     return render(request, 'create_game.html', {'form': form})
-  
+
+ # Function to delete an exisitng game
+@login_required
+def delete_game(request, game_id):
+    """
+    View to delete a game instance.
+    """
+
+    game = get_object_or_404(Game, id=game_id, user=request.user)
+
+    if request.method == "POST":
+        # Handle the deletion
+        game.delete()
+        messages.success(request, f"Game '{game.name}' deleted successfully. ")
+        return redirect('game_list')
+
+    return render(request, 'confirm_delete.html', {'game': game})
+
+
+# Function to list all games associated to user
+@login_required
+def game_list(request):
+    """
+    View to list all games for the logged-in user with options to edit or delete.
+    """
+
+    user_games = Game.objects.filter(user=request.user)
+    return render(request, 'game_list.html', {'games': user_games})
+
 ########### register here ##################################### 
 
 def register(request):
