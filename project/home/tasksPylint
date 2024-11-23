@@ -1,0 +1,14 @@
+************* Module home.tasks
+tasks.py:4:0: C0301: Line too long (125/100) (line-too-long)
+tasks.py:56:0: C0303: Trailing whitespace (trailing-whitespace)
+tasks.py:75:0: C0303: Trailing whitespace (trailing-whitespace)
+tasks.py:84:0: C0301: Line too long (107/100) (line-too-long)
+tasks.py:85:0: C0304: Final newline missing (missing-final-newline)
+tasks.py:74:18: W0612: Unused variable 'headers' (unused-variable)
+tasks.py:25:0: C0411: standard import "os" should be placed before third party imports "django_q.tasks.async_task", "django.utils.timezone" (wrong-import-order)
+tasks.py:22:0: W0611: Unused datetime imported from datetime (unused-import)
+tasks.py:22:0: W0611: Unused timedelta imported from datetime (unused-import)
+
+-----------------------------------
+Your code has been rated at 5.91/10
+
