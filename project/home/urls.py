@@ -52,11 +52,17 @@ urlpatterns = [
     
     # Add URL path for the event detail view
     path('event/<int:event_id>/', views.event_detail, name='event_detail'),
+
+    # URL path for game list
+    path('calendar/games/', views.game_list, name='game_list'),
     # URl path for the create game view
-    path('calendar/create_game/', views.create_game, name='create_game'),
+    path('games/create_game/', views.create_game, name='create_game'),
     # URL for editing an existing game
-    path('game/edit/<int:game_id>/', views.create_game, name='edit_game'), 
-    #url for event deletion that takes in user id and recipe id
+    path('games/<int:game_id>/edit/', views.create_game, name='edit_game'), 
+    # URL for deleting an exisitng game
+    path('games/<int:game_id>/delete/', views.delete_game, name='delete_game'),
+    
+    #url for event deletion that takes in user id and event id
     path('event_delete/<int:user_id>/<int:id>', views.deleteEvent, name='delete_event'),
     path('todo-list/', views.todo_list, name='todo_list'),
 

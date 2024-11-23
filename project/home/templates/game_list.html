@@ -1,0 +1,50 @@
+{% extends "base_template.html" %}
+
+{% block content %}
+
+<!-- Ensures success messages display on the game_list page when user deletes a game. -->
+{% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- Table displaying user's games. -->
+<h2>Your Games</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Platform</th>
+            <th>Genre</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for game in games %}
+        <tr>
+            <td>{{ game.name }}</td>
+            <td>{{ game.get_platform_display }}</td>
+            <td>{{ game.genre }}</td>
+            <td>
+                <a href="{% url 'edit_game' game.id %}" class="btn" >Edit</a> |
+                <a href="{% url 'delete_game' game.id %}" class="btn" style="background-color: red !important;" >Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">You have no games added.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<br><br>
+<div class="button-container">
+    <a class="btn" href="{% url 'calendar' user.id %}">Back to Calendar</a>
+    <a class="btn" href="{% url 'create_game' %}">Add a New Game</a>
+</div>
+{% endblock %}

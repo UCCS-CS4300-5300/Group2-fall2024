@@ -1,0 +1,20 @@
+{% extends "base_template.html" %}
+
+<head>
+    {% load static %} <!-- Load the static tag library -->
+    {% block title %}Delete Game{% endblock %}
+</head>
+
+{% block content %}
+<div class="container-fluid d-flex justify-content-center align-items-center" style="height: 75vh;">
+    <div class="text-center">
+        <h5><b>Are you sure you want to delete "{{ game.name }}"?</b></h5>
+
+        <form action="" method="POST">
+            {% csrf_token %}
+            <a class="btn me-2" href="{% url 'game_list' %}">Cancel</a>
+            <button class="btn" type="submit" style="background-color: red !important;">Confirm</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
