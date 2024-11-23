@@ -53,9 +53,10 @@
                     </a>
                   
                   <div class="d-flex justify-content-end flex-column flex-md-row w-100">
+                    
                     <a class="btn right mb-2 mb-md-0 ml-md-2" href="{% url 'event_new' %}"> New Event </a>
                     <button id="share-calendar-btn" class="btn right mb-2 mb-md-0 ml-md-2">Share Link</button>
-                    <a class="btn right mb-2 mb-md-0" href="{% url 'calendar' owner.id %}?{{ next_month }}{% if request.GET.token %}&token={{ request.GET.token }}{% endif %}"> Next Month--> </a>
+                    <a class="btn right mb-2 mb-md-0 ml-md-2" href="{% url 'calendar' owner.id %}?{{ next_month }}{% if request.GET.token %}&token={{ request.GET.token }}{% endif %}"> Next Month--> </a>
 
                   </div>
                 </div>

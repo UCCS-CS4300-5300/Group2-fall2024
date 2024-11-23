@@ -14,7 +14,7 @@
 
 <body>
 
-    <div class="container mt-5">
+    <div class="container mt-4">
         <h1>{{ event.title }}</h1>
         <p>{{ event.description }}</p>
         <p><strong>Start Time:</strong> {{ event.start_time }}</p>
@@ -25,7 +25,7 @@
         <p><strong>Video Game:</strong> {{ event.game.name }}</p>
         <p><strong>Platform:</strong> {{ event.game.get_platform_display }}</p>
         <p><strong>Genre:</strong> {{ event.game.genre }}</p>
-        <div style="width: 500px; height: 500px; padding-bottom: 10px;" >
+        <div class='d-flex' style="max-width: 100%; height: auto;" >
             {% if event.game.picture_upload %}
                 <img src="{{ event.game.picture_upload.url }}" style="display: block;"/>
             {% elif event.game.picture_link %}
