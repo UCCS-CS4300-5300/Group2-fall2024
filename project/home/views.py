@@ -469,7 +469,7 @@ def create_game(request, game_id=None):
         game_id (int, optional): ID of the game to edit. Defaults to None.
 
     Returns:
-        HttpResponse: Redirects to the calendar view or renders the game form.
+        HttpResponse: Redirects to the game list view or renders the game form.
     """
 
     # Retrieve the game instance if editing, or create a new one if game_id is None
@@ -481,12 +481,40 @@ def create_game(request, game_id=None):
             game = form.save(commit=False)
             game.user = request.user
             game.save()
-            return redirect(reverse('calendar', args=[request.user.id]))  # Redirect to the calendar
+            return redirect(reverse('game_list'))  # Redirect to the game_list
     else:
         form = GameForm(instance=game)
 
     return render(request, 'create_game.html', {'form': form})
-  
+
+ # Function to delete an exisitng game
+@login_required
+def delete_game(request, game_id):
+    """
+    View to delete a game instance.
+    """
+
+    game = get_object_or_404(Game, id=game_id, user=request.user)
+
+    if request.method == "POST":
+        # Handle the deletion
+        game.delete()
+        messages.success(request, f"Game '{game.name}' deleted successfully. ")
+        return redirect('game_list')
+
+    return render(request, 'confirm_delete.html', {'game': game})
+
+
+# Function to list all games associated to user
+@login_required
+def game_list(request):
+    """
+    View to list all games for the logged-in user with options to edit or delete.
+    """
+
+    user_games = Game.objects.filter(user=request.user)
+    return render(request, 'game_list.html', {'games': user_games})
+
 ########### register here ##################################### 
 
 def register(request):
