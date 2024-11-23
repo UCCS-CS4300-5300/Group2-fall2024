@@ -17,8 +17,8 @@
             <td>{{ game.get_platform_display }}</td>
             <td>{{ game.genre }}</td>
             <td>
-                <a href="{% url 'edit_game' game.id %}">Edit</a> |
-                <a href="{% url 'delete_game' game.id %}">Delete</a>
+                <a href="{% url 'edit_game' game.id %}" class="btn" >Edit</a> |
+                <a href="{% url 'delete_game' game.id %}" class="btn" style="background-color: red !important;" >Delete</a>
             </td>
         </tr>
         {% empty %}
