@@ -291,7 +291,7 @@ class GameCreationTests(TestCase):
         response = self.client.post(reverse('create_game'), form_data)
         if response.status_code == 200:
             print(response.context.get('form').errors)  # Debugging line
-        self.assertRedirects(response, reverse('calendar', args=[self.user.id]))
+        self.assertRedirects(response, reverse('game_list'))
 
 
 class RecurringEventTests(TestCase):
