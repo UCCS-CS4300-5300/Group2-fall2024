@@ -27,12 +27,10 @@ from project.sendgrid_client import send_email  # Import the SendGrid email clie
 from .models import Event  # Import your Event model
 
 
-
-
 def send_event_reminders():
     """
     Fetches all events scheduled for today and sends reminder emails to their associated users.
-    
+
     This function:
     - Retrieves the current date and calculates the start and end of the day.
     - Filters events that fall within this time range.
@@ -51,12 +49,13 @@ def send_event_reminders():
     for event in events_today:
         # user_email = event.user.email  # Assuming each event is linked to a user
         user_email = event.user.email
-        subject = 'Reminder: Event Today'
-        content = f'<p>You have an event: <strong>{event.title}</strong> scheduled for today.</p>'
-        
+        subject = "Reminder: Event Today"
+        content = f"<p>You have an event: <strong>{event.title}</strong> scheduled for today.</p>"
+
         # Send the email using SendGrid API
 
-        async_task('home.tasks.send_email_task', subject, user_email, content)
+        async_task("home.tasks.send_email_task", subject, user_email, content)
+
 
 def send_email_task(subject, to_email, content):
     """
@@ -70,14 +69,13 @@ def send_email_task(subject, to_email, content):
     Returns:
         None. Prints success or failure messages to the console.
     """
-    print("Current SendGrid API Key:", os.environ.get('SENDGRID_API_KEY'))  # Debugging line
+    print("Current SendGrid API Key:", os.environ.get("SENDGRID_API_KEY"))  # Debugging line
     status, body, headers = send_email(subject, to_email, content)
-    
+
     if status == 202:
         print(f"Email successfully sent to {to_email}.")
     else:
         print(f"Failed to send email to {to_email}: {body}")
-
 
 
 # Note:

@@ -27,6 +27,7 @@ import uuid
 
 # Create your models here.
 
+
 # Game model
 class Game(models.Model):
     """
@@ -41,33 +42,36 @@ class Game(models.Model):
         color (str): Color code associated with the game (e.g., for UI purposes).
         picture_link (str): URL to the game's image (optional).
         picture_upload (ImageField): Optional uploaded image for the game.
-        user (User): The user who owns this game instance. 
+        user (User): The user who owns this game instance.
     """
+
     PLATFORM_CHOICES = [
-        ('PC', 'PC'),
-        ('PS', 'PlayStation'),
-        ('XBOX', 'Xbox'),
-        ('NS', 'Nintendo Switch'),
+        ("PC", "PC"),
+        ("PS", "PlayStation"),
+        ("XBOX", "Xbox"),
+        ("NS", "Nintendo Switch"),
     ]
     COLOR_CHOICES = [
-        ('#FF5733', 'Red'),
-        ('#FFA500', 'Orange'),
-        ('#FFFF33', 'Yellow'),
-        ('#33FF57', 'Green'),
-        ('#3357FF', 'Blue'),
-        ('#FF33FF', 'Pink'),
-        ('#800080', 'Purple'),
+        ("#FF5733", "Red"),
+        ("#FFA500", "Orange"),
+        ("#FFFF33", "Yellow"),
+        ("#33FF57", "Green"),
+        ("#3357FF", "Blue"),
+        ("#FF33FF", "Pink"),
+        ("#800080", "Purple"),
     ]
     name = models.CharField(max_length=200)
     genre = models.CharField(max_length=100, blank=True, null=True)
     platform = models.CharField(max_length=50, choices=PLATFORM_CHOICES, blank=True, null=True)
     developer = models.CharField(max_length=100, blank=True, null=True)
     release_date = models.DateField(blank=True, null=True)
-    color = models.CharField(max_length=7, choices=COLOR_CHOICES, default='#FFFFFF')  # Set default color
+    color = models.CharField(
+        max_length=7, choices=COLOR_CHOICES, default="#FFFFFF"
+    )  # Set default color
     picture_link = models.CharField(max_length=1000, blank=True, null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='games')
-    
-    #adding in this so peopel can upload pictures
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="games")
+
+    # adding in this so peopel can upload pictures
     picture_upload = models.ImageField(blank=True, null=True)
 
     def __str__(self):
@@ -76,7 +80,8 @@ class Game(models.Model):
         """
         return self.name
 
-# Event model 
+
+# Event model
 class Event(models.Model):
     """
     Represents an event in the system.
@@ -92,32 +97,36 @@ class Event(models.Model):
         priority (int): Priority level of the event (1=Low, 2=Medium, 3=High).
         game (Game): Optional game associated with the event.
     """
+
     PRIORITY_CHOICES = [
-        (1, 'Low'),
-        (2, 'Medium'),
-        (3, 'High'),
+        (1, "Low"),
+        (2, "Medium"),
+        (3, "High"),
     ]
 
     title = models.CharField(max_length=200)
     description = models.TextField()
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, default = None)
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, default=None)
     ############### This is where recurring choices being implemented #################
     RECURRING_CHOICES = [
-        ('none', 'None'),
-        ('daily', 'Daily'),
-        ('weekly', 'Weekly'),
-        ('monthly', 'Monthly'),
+        ("none", "None"),
+        ("daily", "Daily"),
+        ("weekly", "Weekly"),
+        ("monthly", "Monthly"),
     ]
-    
-    recurrence = models.CharField(max_length=20, choices=RECURRING_CHOICES, default='none')
+
+    recurrence = models.CharField(max_length=20, choices=RECURRING_CHOICES, default="none")
     recurrence_end = models.DateField(blank=True, null=True)  # End date for the recurrence
 
     class Meta:
         permissions = [("saved_events", "can save events")]
+
     priority = models.IntegerField(choices=PRIORITY_CHOICES, default=2)
-    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='events', null=True, blank=True)
+    game = models.ForeignKey(
+        Game, on_delete=models.CASCADE, related_name="events", null=True, blank=True
+    )
 
     @property
     def get_html_url(self):
@@ -125,7 +134,7 @@ class Event(models.Model):
         Generates the URL for the event's detail page and returns it as an HTML anchor tag.
         """
         # Return the event_detail link for the event
-        url = reverse('event_detail', args=(self.id,))
+        url = reverse("event_detail", args=(self.id,))
         # Override default url settings, make font black for readability
         return f'<a href="{url}" style="color: #000;">{self.title}</a>'
 
@@ -135,7 +144,7 @@ class Event(models.Model):
         """
         super().save(*args, **kwargs)
         # Grant 'view_event' permission to the assigned user
-        assign_perm('view_event', self.user, self)
+        assign_perm("view_event", self.user, self)
 
     def __str__(self):
         """
@@ -143,7 +152,9 @@ class Event(models.Model):
         """
         return self.title
 
+
 User = get_user_model()
+
 
 class FriendRequest(models.Model):
     """
@@ -155,8 +166,9 @@ class FriendRequest(models.Model):
         created_at (datetime): When the friend request was created.
         accepted (bool): Whether the request has been accepted.
     """
-    from_user = models.ForeignKey(User, related_name='sent_requests', on_delete=models.CASCADE)
-    to_user = models.ForeignKey(User, related_name='received_requests', on_delete=models.CASCADE)
+
+    from_user = models.ForeignKey(User, related_name="sent_requests", on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name="received_requests", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     accepted = models.BooleanField(default=False)
 
@@ -164,7 +176,7 @@ class FriendRequest(models.Model):
         """
         Returns a string representation of the friend request.
         """
-        return f'{self.from_user.username} to {self.to_user.username}'
+        return f"{self.from_user.username} to {self.to_user.username}"
 
     @property
     def friends(self):
@@ -173,11 +185,22 @@ class FriendRequest(models.Model):
         """
         # Get users who have accepted friend requests in either direction
         friends = User.objects.filter(
-            Q(id__in=FriendRequest.objects.filter(from_user=self.from_user, accepted=True).values_list('to_user', flat=True)) |
-            Q(id__in=FriendRequest.objects.filter(to_user=self.from_user, accepted=True).values_list('from_user', flat=True))
-        ).exclude(id=self.from_user.id)  # Exclude the current user
+            Q(
+                id__in=FriendRequest.objects.filter(
+                    from_user=self.from_user, accepted=True
+                ).values_list("to_user", flat=True)
+            )
+            | Q(
+                id__in=FriendRequest.objects.filter(
+                    to_user=self.from_user, accepted=True
+                ).values_list("from_user", flat=True)
+            )
+        ).exclude(
+            id=self.from_user.id
+        )  # Exclude the current user
 
         return friends
+
 
 class CalendarAccess(models.Model):
     """
@@ -188,7 +211,8 @@ class CalendarAccess(models.Model):
         token (UUID): Unique token for identifying the shared calendar.
         created_at (datetime): When the calendar access was created.
     """
-    user = models.ForeignKey(User, related_name='calendar_access', on_delete=models.CASCADE)
+
+    user = models.ForeignKey(User, related_name="calendar_access", on_delete=models.CASCADE)
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
