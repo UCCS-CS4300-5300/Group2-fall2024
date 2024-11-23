@@ -469,7 +469,7 @@ def create_game(request, game_id=None):
         game_id (int, optional): ID of the game to edit. Defaults to None.
 
     Returns:
-        HttpResponse: Redirects to the calendar view or renders the game form.
+        HttpResponse: Redirects to the game list view or renders the game form.
     """
 
     # Retrieve the game instance if editing, or create a new one if game_id is None
@@ -481,7 +481,7 @@ def create_game(request, game_id=None):
             game = form.save(commit=False)
             game.user = request.user
             game.save()
-            return redirect(reverse('calendar', args=[request.user.id]))  # Redirect to the calendar
+            return redirect(reverse('game_list'))  # Redirect to the game_list
     else:
         form = GameForm(instance=game)
 

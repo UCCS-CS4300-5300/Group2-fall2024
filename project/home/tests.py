@@ -851,3 +851,42 @@ class RecurringEventTests(TestCase):
         calendar = Calendar(2024, 2)
         recurring_events = calendar.get_recurring_events(Event.objects.all(), 30)
         self.assertEqual(recurring_events.count(), 0)
+
+# Tests for game list page - specificially page render and delete game (since create and edit games are already tested above).
+class GameListTests(TestCase):
+    def setUp(self):
+        # Create a user and log them in
+        self.user = User.objects.create_user(username="testuser", password="testpassword")
+        self.client.login(username="testuser", password="testpassword")
+        
+        # Create games associated with the user
+        self.game1 = Game.objects.create(name="Game 1", user=self.user, genre="Action", platform="PC")
+        self.game2 = Game.objects.create(name="Game 2", user=self.user, genre="RPG", platform="Xbox")
+
+    def test_game_list_page(self):
+        """
+        Test that the Game List page renders correctly and displays the user's games.
+        """
+        response = self.client.get(reverse('game_list'))  
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'game_list.html')  
+        games = response.context['games']  
+        self.assertIn(self.game1, games)
+        self.assertIn(self.game2, games)
+        self.assertContains(response, self.game1.name)
+        self.assertContains(response, self.game2.name)
+
+    def test_delete_game(self):
+        """
+        Test deleting a game works as expected.
+        """
+        url = reverse('delete_game', args=[self.game2.id]) 
+        response = self.client.post(url)
+
+        # Check for a successful redirect
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('game_list'))
+
+        # Verify the game was deleted from the database
+        game_exists = Game.objects.filter(id=self.game2.id).exists()
+        self.assertFalse(game_exists)
