@@ -14,7 +14,7 @@
 
 <body>
 
-    <div class="container mt-5">
+    <div class="container mt-4">
         <h1>{{ event.title }}</h1>
         <p>{{ event.description }}</p>
         <p><strong>Start Time:</strong> {{ event.start_time }}</p>
@@ -25,7 +25,16 @@
         <p><strong>Video Game:</strong> {{ event.game.name }}</p>
         <p><strong>Platform:</strong> {{ event.game.get_platform_display }}</p>
         <p><strong>Genre:</strong> {{ event.game.genre }}</p>
-
+        <div class='d-flex' style="max-width: 100%; height: auto;" >
+            {% if event.game.picture_upload %}
+                <img src="{{ event.game.picture_upload.url }}" style="display: block;"/>
+            {% elif event.game.picture_link %}
+                <img src="{{ event.game.picture_link }}" alt="Image for {{ event.game.name }}" style="display: block;" />
+            {% else %}
+                <img src="{% static 'images/game-icon.jpg' %}" alt="Default game image" class="game-image" style="display: block;" />
+            {% endif %}
+        </div>
+            
         <!-- Buttons for back to calendar and edit event -->
         <div class="clearfix">
             <a class="btn left" href="{% url 'calendar' owner.id %}">Back to Calendar</a>
@@ -36,7 +45,10 @@
                 <a class="btn center" href="{% url 'delete_event' user.id event.id%}" role="button" style="background-color: red !important;">Delete</a>
             {% endif %}
         </div>
+        
     </div>
+
+
 
     
 </body>

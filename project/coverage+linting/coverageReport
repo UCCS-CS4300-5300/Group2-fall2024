@@ -1,0 +1,328 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.3.3, pluggy-1.5.0
+django: version: 4.2.16, settings: project.settings (from ini)
+rootdir: /root/Group/Group2-fall2024/project
+configfile: pytest.ini
+plugins: django-4.9.0, cov-6.0.0, anyio-4.6.2.post1
+collected 40 items
+
+home/tests.py ............F...FF...............F.F....                   [100%]
+
+=================================== FAILURES ===================================
+____________ CalendarAccessTests.test_access_calendar_invalid_token ____________
+
+self = <django.db.models.fields.UUIDField: token>, value = 'invalid_token'
+
+    def to_python(self, value):
+        if value is not None and not isinstance(value, uuid.UUID):
+            input_form = "int" if isinstance(value, int) else "hex"
+            try:
+>               return uuid.UUID(**{input_form: value})
+
+venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:2688: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <[AttributeError("'UUID' object has no attribute 'int'") raised in repr()] UUID object at 0x75475c3e2d10>
+hex = 'invalid_token', bytes = None, bytes_le = None, fields = None, int = None
+version = None
+
+    def __init__(self, hex=None, bytes=None, bytes_le=None, fields=None,
+                       int=None, version=None,
+                       *, is_safe=SafeUUID.unknown):
+        r"""Create a UUID from either a string of 32 hexadecimal digits,
+        a string of 16 bytes as the 'bytes' argument, a string of 16 bytes
+        in little-endian order as the 'bytes_le' argument, a tuple of six
+        integers (32-bit time_low, 16-bit time_mid, 16-bit time_hi_version,
+        8-bit clock_seq_hi_variant, 8-bit clock_seq_low, 48-bit node) as
+        the 'fields' argument, or a single 128-bit integer as the 'int'
+        argument.  When a string of hex digits is given, curly braces,
+        hyphens, and a URN prefix are all optional.  For example, these
+        expressions all yield the same UUID:
+    
+        UUID('{12345678-1234-5678-1234-567812345678}')
+        UUID('12345678123456781234567812345678')
+        UUID('urn:uuid:12345678-1234-5678-1234-567812345678')
+        UUID(bytes='\x12\x34\x56\x78'*4)
+        UUID(bytes_le='\x78\x56\x34\x12\x34\x12\x78\x56' +
+                      '\x12\x34\x56\x78\x12\x34\x56\x78')
+        UUID(fields=(0x12345678, 0x1234, 0x5678, 0x12, 0x34, 0x567812345678))
+        UUID(int=0x12345678123456781234567812345678)
+    
+        Exactly one of 'hex', 'bytes', 'bytes_le', 'fields', or 'int' must
+        be given.  The 'version' argument is optional; if given, the resulting
+        UUID will have its variant and version set according to RFC 4122,
+        overriding the given 'hex', 'bytes', 'bytes_le', 'fields', or 'int'.
+    
+        is_safe is an enum exposed as an attribute on the instance.  It
+        indicates whether the UUID has been generated in a way that is safe
+        for multiprocessing applications, via uuid_generate_time_safe(3).
+        """
+    
+        if [hex, bytes, bytes_le, fields, int].count(None) != 4:
+            raise TypeError('one of the hex, bytes, bytes_le, fields, '
+                            'or int arguments must be given')
+        if hex is not None:
+            hex = hex.replace('urn:', '').replace('uuid:', '')
+            hex = hex.strip('{}').replace('-', '')
+            if len(hex) != 32:
+>               raise ValueError('badly formed hexadecimal UUID string')
+E               ValueError: badly formed hexadecimal UUID string
+
+/usr/lib/python3.12/uuid.py:178: ValueError
+
+During handling of the above exception, another exception occurred:
+
+self = <home.tests.CalendarAccessTests testMethod=test_access_calendar_invalid_token>
+
+    def test_access_calendar_invalid_token(self):
+>       response = self.client.get(reverse("view_shared_calendar") + "?token=invalid_token")
+
+home/tests.py:773: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+venv/lib/python3.12/site-packages/django/test/client.py:927: in get
+    response = super().get(path, data=data, secure=secure, headers=headers, **extra)
+venv/lib/python3.12/site-packages/django/test/client.py:457: in get
+    return self.generic(
+venv/lib/python3.12/site-packages/django/test/client.py:609: in generic
+    return self.request(**r)
+venv/lib/python3.12/site-packages/django/test/client.py:891: in request
+    self.check_exception(response)
+venv/lib/python3.12/site-packages/django/test/client.py:738: in check_exception
+    raise exc_value
+venv/lib/python3.12/site-packages/django/core/handlers/exception.py:55: in inner
+    response = get_response(request)
+venv/lib/python3.12/site-packages/django/core/handlers/base.py:197: in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+home/views.py:1042: in calendar_access
+    calendar_access = CalendarAccess.objects.get(token=token)
+venv/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.12/site-packages/django/db/models/query.py:623: in get
+    clone = self._chain() if self.query.combinator else self.filter(*args, **kwargs)
+venv/lib/python3.12/site-packages/django/db/models/query.py:1436: in filter
+    return self._filter_or_exclude(False, args, kwargs)
+venv/lib/python3.12/site-packages/django/db/models/query.py:1454: in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+venv/lib/python3.12/site-packages/django/db/models/query.py:1461: in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+venv/lib/python3.12/site-packages/django/db/models/sql/query.py:1546: in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+venv/lib/python3.12/site-packages/django/db/models/sql/query.py:1577: in _add_q
+    child_clause, needed_inner = self.build_filter(
+venv/lib/python3.12/site-packages/django/db/models/sql/query.py:1492: in build_filter
+    condition = self.build_lookup(lookups, col, value)
+venv/lib/python3.12/site-packages/django/db/models/sql/query.py:1319: in build_lookup
+    lookup = lookup_class(lhs, rhs)
+venv/lib/python3.12/site-packages/django/db/models/lookups.py:27: in __init__
+    self.rhs = self.get_prep_lookup()
+venv/lib/python3.12/site-packages/django/db/models/lookups.py:341: in get_prep_lookup
+    return super().get_prep_lookup()
+venv/lib/python3.12/site-packages/django/db/models/lookups.py:85: in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:2672: in get_prep_value
+    return self.to_python(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.models.fields.UUIDField: token>, value = 'invalid_token'
+
+    def to_python(self, value):
+        if value is not None and not isinstance(value, uuid.UUID):
+            input_form = "int" if isinstance(value, int) else "hex"
+            try:
+                return uuid.UUID(**{input_form: value})
+            except (AttributeError, ValueError):
+>               raise exceptions.ValidationError(
+                    self.error_messages["invalid"],
+                    code="invalid",
+                    params={"value": value},
+                )
+E               django.core.exceptions.ValidationError: ['“invalid_token” is not a valid UUID.']
+
+venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:2690: ValidationError
+------------------------------ Captured log call -------------------------------
+ERROR    django.request:log.py:241 Internal Server Error: /calendar/access/
+Traceback (most recent call last):
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py", line 2688, in to_python
+    return uuid.UUID(**{input_form: value})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/uuid.py", line 178, in __init__
+    raise ValueError('badly formed hexadecimal UUID string')
+ValueError: badly formed hexadecimal UUID string
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/home/views.py", line 1042, in calendar_access
+    calendar_access = CalendarAccess.objects.get(token=token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/query.py", line 623, in get
+    clone = self._chain() if self.query.combinator else self.filter(*args, **kwargs)
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/query.py", line 1436, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/query.py", line 1454, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/query.py", line 1461, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/sql/query.py", line 1546, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/sql/query.py", line 1577, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/sql/query.py", line 1492, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/sql/query.py", line 1319, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/lookups.py", line 27, in __init__
+    self.rhs = self.get_prep_lookup()
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/lookups.py", line 341, in get_prep_lookup
+    return super().get_prep_lookup()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/lookups.py", line 85, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py", line 2672, in get_prep_value
+    return self.to_python(value)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py", line 2690, in to_python
+    raise exceptions.ValidationError(
+django.core.exceptions.ValidationError: ['“invalid_token” is not a valid UUID.']
+________________ RecurringEventTests.test_invalid_date_handling ________________
+
+self = <home.tests.RecurringEventTests testMethod=test_invalid_date_handling>
+
+    def test_invalid_date_handling(self):
+>       calendar = Calendar(2024, 2)
+E       NameError: name 'Calendar' is not defined
+
+home/tests.py:851: NameError
+__________ RecurringEventTests.test_no_recurring_events_past_end_date __________
+
+self = <home.tests.RecurringEventTests testMethod=test_no_recurring_events_past_end_date>
+
+    def test_no_recurring_events_past_end_date(self):
+>       calendar = Calendar(2024, 1)
+E       NameError: name 'Calendar' is not defined
+
+home/tests.py:846: NameError
+______ FriendRequestEdgeCaseTests.test_accept_nonexistent_friend_request _______
+
+self = <home.tests.FriendRequestEdgeCaseTests testMethod=test_accept_nonexistent_friend_request>
+
+    def test_accept_nonexistent_friend_request(self):
+        self.client.login(username="user2", password="testpass123")
+        response = self.client.post(reverse("accept_friend_request"), {"request_id": 999})
+>       self.assertEqual(response.status_code, 404)
+E       AssertionError: 500 != 404
+
+home/tests.py:760: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    django.request:log.py:241 Internal Server Error: /accept-friend-request/
+__________ EventPermissionTests.test_delete_event_without_permission ___________
+
+self = <home.tests.EventPermissionTests testMethod=test_delete_event_without_permission>
+
+    def test_delete_event_without_permission(self):
+        response = self.client.post(reverse("delete_event", args=[self.user2.id, self.event.id]))
+>       self.assertEqual(response.status_code, 403)
+E       AssertionError: 302 != 403
+
+home/tests.py:801: AssertionError
+=============================== warnings summary ===============================
+venv/lib/python3.12/site-packages/django_q/conf.py:8
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django_q/conf.py:8: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    import pkg_resources
+
+venv/lib/python3.12/site-packages/django_q/core_signing.py:9
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django_q/core_signing.py:9: RemovedInDjango50Warning: The django.utils.baseconv module is deprecated.
+    from django.utils import baseconv
+
+home/tests.py::EventTests::test_calendar_view
+home/tests.py::EventTests::test_create_event
+home/tests.py::EventTests::test_edit_event
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Event.start_time received a naive datetime (2024-01-01 10:00:00) while time zone support is active.
+    warnings.warn(
+
+home/tests.py::EventTests::test_calendar_view
+home/tests.py::EventTests::test_create_event
+home/tests.py::EventTests::test_edit_event
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Event.end_time received a naive datetime (2024-01-01 11:00:00) while time zone support is active.
+    warnings.warn(
+
+home/tests.py::UpdatePasswordTests::test_update_password_mismatch
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/test/testcases.py:280: RemovedInDjango50Warning: Passing response to assertFormError() is deprecated. Use the form object directly: assertFormError(response.context['password_form'], 'new_password2', ...)
+    return old_method(self, *args, **kwargs)
+
+home/tests.py::DeleteEventTests::test_invalid_event_creation
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/test/testcases.py:280: RemovedInDjango50Warning: Passing response to assertFormError() is deprecated. Use the form object directly: assertFormError(response.context['form'], 'title', ...)
+    return old_method(self, *args, **kwargs)
+
+home/tests.py::UserProfileTests::test_logout_redirect
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/contrib/auth/views.py:142: RemovedInDjango50Warning: Log out via GET requests is deprecated and will be removed in Django 5.0. Use POST requests for logging out.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform linux, python 3.12.3-final-0 -----------
+Name                                                                                    Stmts   Miss  Cover
+-----------------------------------------------------------------------------------------------------------
+home/__init__.py                                                                            0      0   100%
+home/admin.py                                                                               6      0   100%
+home/apps.py                                                                                4      0   100%
+home/forms.py                                                                              86     10    88%
+home/migrations/0001_initial.py                                                             5      0   100%
+home/migrations/0002_alter_event_options_event_user.py                                      6      0   100%
+home/migrations/0002_event_priority.py                                                      4      0   100%
+home/migrations/0003_game.py                                                                4      0   100%
+home/migrations/0004_event_game.py                                                          5      0   100%
+home/migrations/0005_game_color.py                                                          4      0   100%
+home/migrations/0006_merge_20241027_1858.py                                                 4      0   100%
+home/migrations/0007_friendrequest.py                                                       6      0   100%
+home/migrations/0007_game_picture_link.py                                                   4      0   100%
+home/migrations/0008_event_recurrence_event_recurrence_end.py                               4      0   100%
+home/migrations/0008_friendrequest_accepted_alter_friendrequest_from_user_and_more.py       6      0   100%
+home/migrations/0009_calendaraccess.py                                                      7      0   100%
+home/migrations/0009_game_picture_upload.py                                                 4      0   100%
+home/migrations/0010_alter_game_picture_upload.py                                           4      0   100%
+home/migrations/0011_merge_20241110_1125.py                                                 4      0   100%
+home/migrations/0012_game_user.py                                                           6      0   100%
+home/migrations/__init__.py                                                                 0      0   100%
+home/models.py                                                                             62      6    90%
+home/tasks.py                                                                              22     22     0%
+home/templatetags/__init__.py                                                               0      0   100%
+home/templatetags/template_tags.py                                                         11      3    73%
+home/tests.py                                                                             360     71    80%
+home/urls.py                                                                               11      1    91%
+home/utils.py                                                                              78     22    72%
+home/views.py                                                                             393    166    58%
+manage.py                                                                                  11     11     0%
+project/__init__.py                                                                         0      0   100%
+project/asgi.py                                                                             4      4     0%
+project/sendgrid_client.py                                                                 11     11     0%
+project/settings.py                                                                        29      0   100%
+project/urls.py                                                                             3      0   100%
+project/wsgi.py                                                                             4      4     0%
+-----------------------------------------------------------------------------------------------------------
+TOTAL                                                                                    1172    331    72%
+
+=========================== short test summary info ============================
+FAILED home/tests.py::CalendarAccessTests::test_access_calendar_invalid_token
+FAILED home/tests.py::RecurringEventTests::test_invalid_date_handling - NameE...
+FAILED home/tests.py::RecurringEventTests::test_no_recurring_events_past_end_date
+FAILED home/tests.py::FriendRequestEdgeCaseTests::test_accept_nonexistent_friend_request
+FAILED home/tests.py::EventPermissionTests::test_delete_event_without_permission
+================== 5 failed, 35 passed, 11 warnings in 30.91s ==================

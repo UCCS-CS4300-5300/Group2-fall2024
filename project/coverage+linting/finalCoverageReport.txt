@@ -1,0 +1,88 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.3.3, pluggy-1.5.0
+django: version: 4.2.16, settings: project.settings (from ini)
+rootdir: /root/Group/Group2-fall2024/project
+configfile: pytest.ini
+plugins: django-4.9.0, cov-6.0.0, anyio-4.6.2.post1
+collected 49 items
+
+home/tests.py .................................................          [100%]
+
+=============================== warnings summary ===============================
+venv/lib/python3.12/site-packages/django_q/conf.py:8
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django_q/conf.py:8: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    import pkg_resources
+
+venv/lib/python3.12/site-packages/django_q/core_signing.py:9
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django_q/core_signing.py:9: RemovedInDjango50Warning: The django.utils.baseconv module is deprecated.
+    from django.utils import baseconv
+
+home/tests.py::EventTests::test_calendar_view
+home/tests.py::EventTests::test_create_event
+home/tests.py::EventTests::test_edit_event
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Event.start_time received a naive datetime (2024-01-01 10:00:00) while time zone support is active.
+    warnings.warn(
+
+home/tests.py::EventTests::test_calendar_view
+home/tests.py::EventTests::test_create_event
+home/tests.py::EventTests::test_edit_event
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Event.end_time received a naive datetime (2024-01-01 11:00:00) while time zone support is active.
+    warnings.warn(
+
+home/tests.py::UpdatePasswordTests::test_update_password_mismatch
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/test/testcases.py:280: RemovedInDjango50Warning: Passing response to assertFormError() is deprecated. Use the form object directly: assertFormError(response.context['password_form'], 'new_password2', ...)
+    return old_method(self, *args, **kwargs)
+
+home/tests.py::DeleteEventTests::test_invalid_event_creation
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/test/testcases.py:280: RemovedInDjango50Warning: Passing response to assertFormError() is deprecated. Use the form object directly: assertFormError(response.context['form'], 'title', ...)
+    return old_method(self, *args, **kwargs)
+
+home/tests.py::UserProfileTests::test_logout_redirect
+  /root/Group/Group2-fall2024/project/venv/lib/python3.12/site-packages/django/contrib/auth/views.py:142: RemovedInDjango50Warning: Log out via GET requests is deprecated and will be removed in Django 5.0. Use POST requests for logging out.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform linux, python 3.12.3-final-0 -----------
+Name                                                                                    Stmts   Miss  Cover
+-----------------------------------------------------------------------------------------------------------
+home/__init__.py                                                                            0      0   100%
+home/admin.py                                                                               6      0   100%
+home/apps.py                                                                                4      0   100%
+home/forms.py                                                                              86     10    88%
+home/migrations/0001_initial.py                                                             5      0   100%
+home/migrations/0002_alter_event_options_event_user.py                                      6      0   100%
+home/migrations/0002_event_priority.py                                                      4      0   100%
+home/migrations/0003_game.py                                                                4      0   100%
+home/migrations/0004_event_game.py                                                          5      0   100%
+home/migrations/0005_game_color.py                                                          4      0   100%
+home/migrations/0006_merge_20241027_1858.py                                                 4      0   100%
+home/migrations/0007_friendrequest.py                                                       6      0   100%
+home/migrations/0007_game_picture_link.py                                                   4      0   100%
+home/migrations/0008_event_recurrence_event_recurrence_end.py                               4      0   100%
+home/migrations/0008_friendrequest_accepted_alter_friendrequest_from_user_and_more.py       6      0   100%
+home/migrations/0009_calendaraccess.py                                                      7      0   100%
+home/migrations/0009_game_picture_upload.py                                                 4      0   100%
+home/migrations/0010_alter_game_picture_upload.py                                           4      0   100%
+home/migrations/0011_merge_20241110_1125.py                                                 4      0   100%
+home/migrations/0012_game_user.py                                                           6      0   100%
+home/migrations/__init__.py                                                                 0      0   100%
+home/models.py                                                                             62      6    90%
+home/tasks.py                                                                              22     22     0%
+home/templatetags/__init__.py                                                               0      0   100%
+home/templatetags/template_tags.py                                                         11      3    73%
+home/tests.py                                                                             340      0   100%
+home/urls.py                                                                               11      1    91%
+home/utils.py                                                                              82     22    73%
+home/views.py                                                                             410    130    68%
+manage.py                                                                                  11     11     0%
+project/__init__.py                                                                         0      0   100%
+project/asgi.py                                                                             4      4     0%
+project/sendgrid_client.py                                                                 11     11     0%
+project/settings.py                                                                        29      0   100%
+project/urls.py                                                                             3      0   100%
+project/wsgi.py                                                                             4      4     0%
+-----------------------------------------------------------------------------------------------------------
+TOTAL                                                                                    1173    224    81%
+
+======================= 49 passed, 11 warnings in 33.01s =======================

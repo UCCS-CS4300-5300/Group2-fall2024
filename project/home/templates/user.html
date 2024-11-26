@@ -3,14 +3,16 @@
 {% block title %}Account Settings{% endblock %}
 
 {% block content %}
-<header class="header">
+<!-- Header section -->
+<header class="header text-center">
     <h1>GamePlan Profile</h1>
 </header>
 
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-8 col-lg-6">
 
+            <!-- User Welcome Section -->
             <div class="text-center mb-4">
                 {% if user.first_name %}
                     <p>Welcome, {{ user.first_name }}</p>
@@ -28,17 +30,34 @@
                 </div>
             {% endif %}
 
+            <!-- Account settings actions -->
             <div class="text-center mb-4">
-                <div class="btn-group" role="group" aria-label="Account Settings">
-                    <a href="{% url 'update_account' %}" class="btn btn-primary me-2">Update Account Information</a>
-                    <a href="{% url 'update_password' %}" class="btn btn-secondary">Update Password</a>
+                <div class="btn-group-vertical w-100" role="group" aria-label="Account Settings">
+                    <!-- Update Account Information Button -->
+                    <a href="{% url 'update_account' %}" class="btn btn-custom w-100 mb-2">Update Account Information</a>
+                    <!-- Update Password Button -->
+                    <a href="{% url 'update_password' %}" class="btn btn-custom w-100">Update Password</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<footer class="footer mt-5 text-center">
-    <p>Created by Group 2</p>
-</footer>
-{% endblock %}
+
+<style>
+    /* Custom button size */
+    /* Ensure the buttons have the same height and font size */
+    .btn-custom {
+        font-size: 16px;        /* Ensure same font size */
+        padding: 12px 20px;     /* Equal padding to make buttons of the same size */
+        text-align: center;     /* Center the text inside buttons */
+    }
+
+    /* Make buttons full-width and responsive on all screen sizes */
+    @media (max-width: 768px) {
+        .btn-custom {
+            width: 100% !important;  /* Make buttons full-width on smaller screens */
+        }
+    }
+</style>
+{%endblock%}

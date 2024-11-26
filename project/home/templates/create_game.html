@@ -12,9 +12,11 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary mt-3">
+        <a class="btn mt-3" href="{% url 'game_list'%}">Back to Game List</a>
+        <button type="submit" class="btn mt-3">
             {% if form.instance.id %}Update Game{% else %}Create Game{% endif %}
         </button>
+        
     </form>
 </div>
 {% endblock %}

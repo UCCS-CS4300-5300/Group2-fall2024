@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+import warnings
 from pathlib import Path
 
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="pkg_resources")
 
 
 
@@ -35,7 +37,7 @@ ALLOWED_HOSTS = [
     'https://app-hnguye22-5.devedu.io/', 'app-hnguye22-5.devedu.io', 
     'https://app-jfuentes-5.devedu.io/', 'app-jfuentes-5.devedu.io', 
     'https://app-afuina-5.devedu.io/', 'app-afuina-5.devedu.io', 
-    'https://app-smatthe4container-5.devedu.io/', 'app-smatthe4container-5.devedu.io',
+    'https://app-app-workingcontainer-5.devedu.io/', 'app-workingcontainer-5.devedu.io',
 ]
 
 CSRF_TRUSTED_ORIGINS = [

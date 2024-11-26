@@ -32,10 +32,12 @@
     <h1>Friend Requests</h1>
     <ul id="friend-requests">
         {% for request in pending_requests %}
-            <li id="request-{{ request.id }}">
+            <li id="request-{{ request.id }}" class="mb-3">
                 <p>{{ request.from_user.username }} sent you a friend request on {{ request.created_at }}</p>
-                <button class="accept-request" data-request-id="{{ request.id }}">Accept</button>
-                <button class="decline-request" data-request-id="{{ request.id }}">Decline</button>
+                <div class="d-flex flex-column flex-md-row justify-content-start">
+                    <button class="accept-request btn btn-success mb-2 mb-md-0 me-md-2" data-request-id="{{ request.id }}">Accept</button>
+                    <button class="decline-request btn btn-danger mb-2 mb-md-0" data-request-id="{{ request.id }}">Decline</button>
+                </div>
             </li>
         {% empty %}
             <li>No pending friend requests.</li>
@@ -237,8 +239,11 @@
                         response.friends.forEach(function(friend) {
                             const friendItem = `
                                 <li id="list-${friend.username}" class="mb-2">${friend.username} is your friend
+                                <div class="d-inline-flex">
                                 <button class="delete-friend-btn btn" data-friend-id="${friend.user_id}" style="background-color: red !important;">Delete Friend</button>
-                                <a href="/calendar/${friend.user_id}" class="view-calendar-button btn">View Calendar</a></li>`;
+                                <a href="/calendar/${friend.user_id}" class="view-calendar-button btn ml-2">View Calendar</a>
+                                </div>
+                                </li>`;
                                 
                             friendsList.append(friendItem);
 
